@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Proposta de Apresentação | Bevilacqua</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    html { scroll-behavior: smooth; }
+    .noise::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(rgba(0, 0, 0, 0.03) 0.5px, transparent 0.5px);
+      background-size: 2px 2px;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body class="bg-white text-black antialiased">
+  <main>
+    <section class="relative min-h-screen overflow-hidden bg-black text-white">
+      <div class="absolute inset-0">
+        <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80" alt="Arquitetura" class="h-full w-full object-cover opacity-35">
+        <div class="absolute inset-0 bg-black/55"></div>
+      </div>
+      <div class="relative z-10 mx-auto flex min-h-screen max-w-6xl flex-col justify-end px-6 pb-20 pt-20 lg:pb-28">
+        <span class="inline-block w-fit border border-[#911419] bg-[#911419]/10 px-4 py-2 text-xs uppercase tracking-[0.18em] text-[#d1464a]">Proposta Comercial</span>
+        <h1 class="mt-6 max-w-4xl text-4xl font-light leading-tight sm:text-5xl lg:text-7xl">Apresentação de Projeto Arquitetônico Residencial</h1>
+        <p class="mt-5 max-w-2xl text-base text-white/70 sm:text-lg">Material institucional para apresentar escopo, metodologia, diferenciais e etapas do desenvolvimento do projeto.</p>
+      </div>
+    </section>
+
+    <section class="relative noise border-t border-black/10 bg-white px-6 py-16 sm:py-20">
+      <div class="mx-auto max-w-6xl">
+        <h2 class="text-3xl font-medium uppercase tracking-wide sm:text-4xl">O que entregamos</h2>
+        <div class="mt-8 grid gap-4 md:grid-cols-2">
+          <article class="rounded-xl border border-black/15 p-5">
+            <h3 class="text-lg font-medium">Estudo de Implantação</h3>
+            <p class="mt-2 text-black/70">Análise do terreno, orientação solar, ventos predominantes e estratégia inicial de ocupação.</p>
+          </article>
+          <article class="rounded-xl border border-black/15 p-5">
+            <h3 class="text-lg font-medium">Briefing e Diretrizes</h3>
+            <p class="mt-2 text-black/70">Levantamento de objetivos, prioridades de uso e conceito do projeto.</p>
+          </article>
+          <article class="rounded-xl border border-black/15 p-5">
+            <h3 class="text-lg font-medium">Estudo Preliminar</h3>
+            <p class="mt-2 text-black/70">Plantas iniciais, setorização e proposta volumétrica com foco em funcionalidade.</p>
+          </article>
+          <article class="rounded-xl border border-black/15 p-5">
+            <h3 class="text-lg font-medium">Projeto Executivo</h3>
+            <p class="mt-2 text-black/70">Documentação completa para execução da obra com detalhamentos técnicos.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="border-t border-black/10 bg-black px-6 py-16 text-white sm:py-20">
+      <div class="mx-auto max-w-6xl">
+        <h2 class="text-3xl font-light uppercase tracking-wide sm:text-4xl">Condições Comerciais</h2>
+        <div class="mt-8 rounded-2xl border border-white/20 p-8 text-center">
+          <p class="text-sm uppercase tracking-[0.16em] text-white/50">Investimento</p>
+          <p class="mt-4 text-3xl font-medium sm:text-5xl">Valor sob consulta</p>
+          <p class="mt-3 text-white/70">A proposta financeira é personalizada conforme escopo, metragem e nível de detalhamento solicitado.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
