@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Proposta Comercial | Bevilacqua Arquitetura e Engenharia</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            primary: '#911419',
+            'primary-light': '#B91C22',
+            foreground: '#333333',
+            background: '#FFFFFF',
+            muted: '#F9F9F9',
+            'warm-white': '#FEFCFA',
+            'cool-gray': '#F5F7F9',
+            'warm-gray': '#F8F6F4',
+            'soft-cream': '#FAF9F7',
+            'pale-rose': '#FBF9F8',
+            'stone': '#F6F5F3',
+            'pearl': '#FAFAFA',
+            'linen': '#FAF8F5',
+            'silk': '#F9F8F6',
+            'charcoal': '#2D2D2D',
+            'graphite': '#3D3D3D',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+    
+    /* Gradient transitions between sections */
+    .gradient-warm-to-cool {
+      background: linear-gradient(180deg, #FEFCFA 0%, #F5F7F9 100%);
+    }
+    
+    .gradient-cool-to-warm {
+      background: linear-gradient(180deg, #F5F7F9 0%, #FAF8F5 100%);
+    }
+    
+    .gradient-warm-to-stone {
+      background: linear-gradient(180deg, #FAF8F5 0%, #F6F5F3 100%);
+    }
+    
+    .gradient-stone-to-silk {
+      background: linear-gradient(180deg, #F6F5F3 0%, #F9F8F6 100%);
+    }
+    
+    .gradient-silk-to-pearl {
+      background: linear-gradient(180deg, #F9F8F6 0%, #FAFAFA 100%);
+    }
+    
+    .gradient-pearl-to-cream {
+      background: linear-gradient(180deg, #FAFAFA 0%, #FAF9F7 100%);
+    }
+    
+    .gradient-cream-to-linen {
+      background: linear-gradient(180deg, #FAF9F7 0%, #FAF8F5 100%);
+    }
+    
+    .gradient-linen-to-rose {
+      background: linear-gradient(180deg, #FAF8F5 0%, #FBF9F8 100%);
+    }
+    
+    .gradient-to-dark {
+      background: linear-gradient(180deg, #FBF9F8 0%, #F5F5F5 50%, #2D2D2D 50%, #2D2D2D 100%);
+    }
+    
+    .gradient-dark-warm {
+      background: linear-gradient(180deg, #2D2D2D 0%, #333333 50%, #3D3D3D 100%);
+    }
+
+    /* Subtle texture overlay for architectural feel */
+    .paper-texture {
+      position: relative;
+    }
+    
+    .paper-texture::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noise)' opacity='0.015'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0.5;
+    }
+
+    /* Animated elements */
+    .animate-item {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+    }
+    
+    .animate-item.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Accordion styles */
+    .accordion-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease-out, padding 0.4s ease-out;
+    }
+    
+    .accordion-content.open {
+      max-height: 500px;
+    }
+    
+    .accordion-icon {
+      transition: transform 0.3s ease;
+    }
+    
+    .accordion-trigger.open .accordion-icon {
+      transform: rotate(180deg);
+    }
+
+    /* Navigation styles */
+    .nav-item::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      bottom: -2px;
+      width: 0;
+      height: 2px;
+      background: #911419;
+      transition: width 0.3s ease, left 0.3s ease;
+    }
+    
+    .nav-item:hover::after,
+    .nav-item.active::after {
+      width: 100%;
+      left: 0;
+    }
+
+    /* Decorative line */
+    .decorative-line {
+      background: linear-gradient(90deg, #911419 0%, rgba(145, 20, 25, 0.3) 50%, transparent 100%);
+    }
+
+    /* Progress indicator */
+    .progress-bar {
+      background: linear-gradient(180deg, #911419 var(--progress), rgba(255,255,255,0.2) var(--progress));
+    }
+  </style>
+</head>
+<body class="font-sans antialiased text-foreground">
+
+  <!-- Navigation - Fixed Sidebar (Desktop) -->
+  <nav id="sidebar-nav" class="fixed left-0 top-0 z-50 hidden h-screen w-20 flex-col items-center justify-between bg-charcoal py-8 lg:flex">
+    <!-- Logo -->
+    <div class="flex flex-col items-center gap-4">
+      <img 
+        src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/logo.png-9mRrvj28aRZ67rPbc0QVFN9MRd8ZjD.webp" 
+        alt="Bevilacqua" 
+        class="h-10 w-10 object-contain"
+      >
+      <div class="h-8 w-px bg-white/20"></div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="relative h-48 w-px bg-white/10">
+      <div id="progress-indicator" class="absolute top-0 left-0 w-full bg-primary transition-all duration-300" style="height: 0%"></div>
+    </div>
+
+    <!-- Phase Numbers -->
+    <div class="flex flex-col items-center gap-2">
+      <button onclick="scrollToSection('hero')" class="nav-btn group relative flex h-8 w-8 items-center justify-center text-sm font-medium text-white/40 transition-all duration-300 hover:text-white" data-section="hero">
+        <span>00</span>
+        <span class="nav-tooltip absolute left-full ml-4 whitespace-nowrap bg-foreground px-3 py-2 text-sm text-white opacity-0 transition-opacity group-hover:opacity-100">Início</span>
+      </button>
+      <button onclick="scrollToSection('fase-1')" class="nav-btn group relative flex h-8 w-8 items-center justify-center text-sm font-medium text-white/40 transition-all duration-300 hover:text-white" data-section="fase-1">
+        <span>01</span>
+        <span class="nav-tooltip absolute left-full ml-4 whitespace-nowrap bg-foreground px-3 py-2 text-sm text-white opacity-0 transition-opacity group-hover:opacity-100">Implantação</span>
+      </button>
+      <button onclick="scrollToSection('fase-2')" class="nav-btn group relative flex h-8 w-8 items-center justify-center text-sm font-medium text-white/40 transition-all duration-300 hover:text-white" data-section="fase-2">
+        <span>02</span>
+        <span class="nav-tooltip absolute left-full ml-4 whitespace-nowrap bg-foreground px-3 py-2 text-sm text-white opacity-0 transition-opacity group-hover:opacity-100">Briefing</span>
+      </button>
+      <button onclick="scrollToSection('fase-3')" class="nav-btn group relative flex h-8 w-8 items-center justify-center text-sm font-medium text-white/40 transition-all duration-300 hover:text-white" data-section="fase-3">
+        <span>03</span>
+        <span class="nav-tooltip absolute left-full ml-4 whitespace-nowrap bg-foreground px-3 py-2 text-sm text-white opacity-0 transition-opacity group-hover:opacity-100">Estudo Preliminar</span>
+      </button>
+      <button onclick="scrollToSection('fase-4')" class="nav-btn group relative flex h-8 w-8 items-center justify-center text-sm font-medium text-white/40 transition-all duration-300 hover:text-white" data-section="fase-4">
+        <span>04</span>
+        <span class="nav-tooltip absolute left-full ml-4 whitespace-nowrap bg-foreground px-3 py-2 text-sm text-white opacity-0 transition-opacity group-hover:opacity-100">Fachadas</span>
+      </button>
+      <button onclick="scrollToSection('fase-5')" class="nav-btn group relative flex h-8 w-8 items-center justify-center text-sm font-medium text-white/40 transition-all duration-300 hover:text-white" data-section="fase-5">
+        <span>05</span>
+        <span class="nav-tooltip absolute left-full ml-4 whitespace-nowrap bg-foreground px-3 py-2 text-sm text-white opacity-0 transition-opacity group-hover:opacity-100">Complementares</span>
+      </button>
+      <button onclick="scrollToSection('fase-6')" class="nav-btn group relative flex h-8 w-8 items-center justify-center text-sm font-medium text-white/40 transition-all duration-300 hover:text-white" data-section="fase-6">
+        <span>06</span>
+        <span class="nav-tooltip absolute left-full ml-4 whitespace-nowrap bg-foreground px-3 py-2 text-sm text-white opacity-0 transition-opacity group-hover:opacity-100">Projeto Legal</span>
+      </button>
+      <button onclick="scrollToSection('fase-7')" class="nav-btn group relative flex h-8 w-8 items-center justify-center text-sm font-medium text-white/40 transition-all duration-300 hover:text-white" data-section="fase-7">
+        <span>07</span>
+        <span class="nav-tooltip absolute left-full ml-4 whitespace-nowrap bg-foreground px-3 py-2 text-sm text-white opacity-0 transition-opacity group-hover:opacity-100">Compatibilização</span>
+      </button>
+      <button onclick="scrollToSection('fase-8')" class="nav-btn group relative flex h-8 w-8 items-center justify-center text-sm font-medium text-white/40 transition-all duration-300 hover:text-white" data-section="fase-8">
+        <span>08</span>
+        <span class="nav-tooltip absolute left-full ml-4 whitespace-nowrap bg-foreground px-3 py-2 text-sm text-white opacity-0 transition-opacity group-hover:opacity-100">Executivo</span>
+      </button>
+      <button onclick="scrollToSection('investimento')" class="nav-btn group relative flex h-8 w-8 items-center justify-center text-sm font-medium text-white/40 transition-all duration-300 hover:text-white" data-section="investimento">
+        <span>09</span>
+        <span class="nav-tooltip absolute left-full ml-4 whitespace-nowrap bg-foreground px-3 py-2 text-sm text-white opacity-0 transition-opacity group-hover:opacity-100">Investimento</span>
+      </button>
+    </div>
+
+    <!-- Current Phase -->
+    <div class="text-center">
+      <span class="text-xs uppercase tracking-widest text-white/40">Fase</span>
+      <p id="current-phase" class="mt-1 text-xl font-light text-white">00</p>
+    </div>
+  </nav>
+
+  <!-- Mobile Navigation -->
+  <nav id="mobile-nav" class="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-between bg-charcoal px-4 py-3 lg:hidden">
+    <div class="flex items-center gap-2">
+      <span class="text-2xl font-bold text-white">B</span>
+      <span class="text-sm text-white/60">|</span>
+      <span id="mobile-phase-label" class="text-sm uppercase tracking-wider text-white/60">Fase 00</span>
+    </div>
+    <div class="flex items-center gap-1">
+      <button onclick="scrollToSection('hero')" class="mobile-nav-btn flex h-7 w-7 items-center justify-center text-xs text-white/40" data-section="hero">00</button>
+      <button onclick="scrollToSection('fase-1')" class="mobile-nav-btn flex h-7 w-7 items-center justify-center text-xs text-white/40" data-section="fase-1">01</button>
+      <button onclick="scrollToSection('fase-2')" class="mobile-nav-btn flex h-7 w-7 items-center justify-center text-xs text-white/40" data-section="fase-2">02</button>
+      <button onclick="scrollToSection('fase-3')" class="mobile-nav-btn flex h-7 w-7 items-center justify-center text-xs text-white/40" data-section="fase-3">03</button>
+      <button onclick="scrollToSection('fase-4')" class="mobile-nav-btn flex h-7 w-7 items-center justify-center text-xs text-white/40" data-section="fase-4">04</button>
+      <span class="text-sm text-white/40">...</span>
+    </div>
+    <!-- Mobile Progress -->
+    <div class="absolute top-0 left-0 h-0.5 w-full bg-white/10">
+      <div id="mobile-progress" class="h-full bg-primary transition-all duration-300" style="width: 0%"></div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="lg:ml-20">
+
+    <!-- HERO SECTION -->
+    <section id="hero" class="relative min-h-screen overflow-hidden paper-texture" style="background: linear-gradient(180deg, #1a1a1a 0%, #2d2d2d 100%);">
+      <!-- Background Image with Overlay -->
+      <div class="absolute inset-0">
+        <img 
+          src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80" 
+          alt="Arquitetura moderna" 
+          class="h-full w-full object-cover opacity-40"
+        >
+        <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-charcoal"></div>
+      </div>
+
+      <!-- Logo Top Left -->
+      <div class="absolute left-8 top-8 z-10 lg:left-12">
+        <img 
+          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Bevilacqua-Logo-48-yr2vRaMDSk4LfkZYxs0kxKufdEc6g4.png" 
+          alt="Bevilacqua - 48 anos de experiência" 
+          class="h-12 w-auto lg:h-16"
+        >
+      </div>
+
+      <!-- Main Content -->
+      <div class="absolute bottom-20 left-8 z-10 lg:bottom-32 lg:left-12">
+        <div class="mb-8">
+          <span class="inline-block border border-primary bg-primary/10 px-5 py-3 text-sm uppercase tracking-widest text-primary">
+            Proposta Comercial
+          </span>
+        </div>
+        
+        <h1 class="max-w-3xl text-5xl font-extralight leading-tight text-white md:text-7xl lg:text-8xl">
+          <span class="block text-white/60">Projeto para</span>
+          <span class="block text-white">{{ nome_cliente }}</span>
+        </h1>
+
+        <div class="mt-12 flex items-center gap-8">
+          <div>
+            <span class="text-sm uppercase tracking-widest text-white/40">Validade</span>
+            <p class="mt-1 text-xl text-white">{{ data_validade }}</p>
+          </div>
+          <div class="h-8 w-px bg-white/20"></div>
+          <div>
+            <span class="text-sm uppercase tracking-widest text-white/40">Fases</span>
+            <p class="mt-1 text-xl text-white">08 Etapas</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scroll Indicator -->
+      <div class="absolute bottom-8 right-8 lg:right-12">
+        <div class="flex flex-col items-center gap-3 text-white/40">
+          <span class="text-sm uppercase tracking-widest">Scroll</span>
+          <div class="h-12 w-px bg-gradient-to-b from-white/40 to-transparent animate-pulse"></div>
+        </div>
+      </div>
+
+      <!-- Phase Index -->
+      <div class="absolute right-8 top-8 text-right lg:right-12">
+        <span class="text-sm uppercase tracking-widest text-white/40">Introdução</span>
+        <p class="mt-1 text-5xl font-extralight text-white/20">00</p>
+      </div>
+
+      <!-- Transition gradient to next section -->
+      <div class="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-b from-transparent to-warm-white"></div>
+    </section>
+
+    <!-- FASE 01 - ESTUDO DE IMPLANTAÇÃO -->
+    <section id="fase-1" class="relative min-h-screen paper-texture gradient-warm-to-cool">
+      <div class="mx-auto max-w-7xl px-8 py-24 lg:px-12 lg:py-32">
+        <div class="grid gap-16 lg:grid-cols-2 lg:gap-24 items-center">
+          <!-- Content -->
+          <div>
+            <!-- Phase Number -->
+            <div class="animate-item mb-8 flex items-center gap-4">
+              <span class="text-6xl font-extralight text-primary lg:text-7xl">01</span>
+              <div class="h-px flex-1 max-w-24 decorative-line"></div>
+            </div>
+
+            <!-- Title -->
+            <div class="animate-item" style="transition-delay: 100ms;">
+              <span class="text-sm uppercase tracking-widest text-foreground/40">Primeira Etapa</span>
+              <h2 class="mt-2 text-4xl font-light uppercase tracking-wide text-foreground lg:text-5xl">
+                Estudo de Implantação
+              </h2>
+            </div>
+
+            <!-- Description -->
+            <p class="animate-item mt-6 max-w-lg text-lg leading-relaxed text-foreground/70" style="transition-delay: 200ms;">
+              Análise detalhada do terreno e posicionamento ideal da edificação, considerando orientação solar, ventos predominantes e topografia.
+            </p>
+
+            <!-- Items -->
+            <div class="animate-item mt-8 space-y-4" style="transition-delay: 300ms;">
+              <div class="flex items-start gap-3 border-l-2 border-foreground/10 py-3 pl-5 transition-colors hover:border-primary">
+                <div>
+                  <p class="text-base font-medium text-foreground">Análise do Terreno</p>
+                  <p class="mt-1 text-sm text-foreground/50">Estudo topográfico e características do lote</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3 border-l-2 border-foreground/10 py-3 pl-5 transition-colors hover:border-primary">
+                <div>
+                  <p class="text-base font-medium text-foreground">Orientação Solar</p>
+                  <p class="mt-1 text-sm text-foreground/50">Posicionamento para melhor aproveitamento da luz natural</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3 border-l-2 border-foreground/10 py-3 pl-5 transition-colors hover:border-primary">
+                <div>
+                  <p class="text-base font-medium text-foreground">Estudo de Acessos</p>
+                  <p class="mt-1 text-sm text-foreground/50">Definição de entradas e circulações</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Prazo -->
+            <div class="animate-item mt-8 inline-flex items-center gap-4 border border-foreground/20 px-6 py-4" style="transition-delay: 400ms;">
+              <svg class="h-6 w-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <div>
+                <span class="text-sm uppercase tracking-widest text-foreground/40">Prazo Estimado</span>
+                <p class="text-base font-medium text-foreground">5 dias úteis</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Image -->
+          <div class="animate-item relative aspect-[4/5] overflow-hidden" style="transition-delay: 200ms;">
+            <img 
+              src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800&q=80" 
+              alt="Estudo de Implantação" 
+              class="h-full w-full object-cover"
+            >
+            <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+            <!-- Decorative number -->
+            <span class="absolute -right-8 bottom-8 text-[12rem] font-extralight leading-none text-white/10 lg:-right-12 lg:text-[16rem]">01</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FASE 02 - BRIEFING -->
+    <section id="fase-2" class="relative min-h-screen paper-texture gradient-cool-to-warm">
+      <div class="mx-auto max-w-7xl px-8 py-24 lg:px-12 lg:py-32">
+        <div class="grid gap-16 lg:grid-cols-2 lg:gap-24 items-center">
+          <!-- Image (Left) -->
+          <div class="animate-item relative aspect-[4/5] overflow-hidden order-2 lg:order-1" style="transition-delay: 200ms;">
+            <img 
+              src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=80" 
+              alt="Briefing e Reunião" 
+              class="h-full w-full object-cover"
+            >
+            <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+            <span class="absolute -left-8 bottom-8 text-[12rem] font-extralight leading-none text-white/10 lg:-left-12 lg:text-[16rem]">02</span>
+          </div>
+
+          <!-- Content (Right) -->
+          <div class="order-1 lg:order-2">
+            <div class="animate-item mb-8 flex items-center gap-4">
+              <span class="text-6xl font-extralight text-primary lg:text-7xl">02</span>
+              <div class="h-px flex-1 max-w-24 decorative-line"></div>
+            </div>
+
+            <div class="animate-item" style="transition-delay: 100ms;">
+              <span class="text-sm uppercase tracking-widest text-foreground/40">Segunda Etapa</span>
+              <h2 class="mt-2 text-4xl font-light uppercase tracking-wide text-foreground lg:text-5xl">
+                Briefing
+              </h2>
+            </div>
+
+            <p class="animate-item mt-6 max-w-lg text-lg leading-relaxed text-foreground/70" style="transition-delay: 200ms;">
+              Momento de escuta ativa onde captamos suas ideias, necessidades e sonhos para traduzir em arquitetura.
+            </p>
+
+            <div class="animate-item mt-8 space-y-4" style="transition-delay: 300ms;">
+              <div class="flex items-start gap-3 border-l-2 border-foreground/10 py-3 pl-5 transition-colors hover:border-primary">
+                <div>
+                  <p class="text-base font-medium text-foreground">Reunião de Alinhamento</p>
+                  <p class="mt-1 text-sm text-foreground/50">Conversa detalhada sobre expectativas e lifestyle</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3 border-l-2 border-foreground/10 py-3 pl-5 transition-colors hover:border-primary">
+                <div>
+                  <p class="text-base font-medium text-foreground">Coleta de Referências</p>
+                  <p class="mt-1 text-sm text-foreground/50">Análise de inspirações e preferências estéticas</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3 border-l-2 border-foreground/10 py-3 pl-5 transition-colors hover:border-primary">
+                <div>
+                  <p class="text-base font-medium text-foreground">Programa de Necessidades</p>
+                  <p class="mt-1 text-sm text-foreground/50">Definição de ambientes e funcionalidades</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3 border-l-2 border-foreground/10 py-3 pl-5 transition-colors hover:border-primary">
+                <div>
+                  <p class="text-base font-medium text-foreground">Definição de Orçamento</p>
+                  <p class="mt-1 text-sm text-foreground/50">Alinhamento de expectativas financeiras</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="animate-item mt-8 inline-flex items-center gap-4 border border-foreground/20 px-6 py-4" style="transition-delay: 400ms;">
+              <svg class="h-6 w-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <div>
+                <span class="text-sm uppercase tracking-widest text-foreground/40">Prazo Estimado</span>
+                <p class="text-base font-medium text-foreground">3 dias úteis</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FASE 03 - ESTUDO PRELIMINAR -->
+    <section id="fase-3" class="relative min-h-screen paper-texture gradient-warm-to-stone">
+      <div class="mx-auto max-w-7xl px-8 py-24 lg:px-12 lg:py-32">
+        <div class="grid gap-16 lg:grid-cols-2 lg:gap-24 items-center">
+          <!-- Content -->
+          <div>
+            <div class="animate-item mb-8 flex items-center gap-4">
+              <span class="text-6xl font-extralight text-primary lg:text-7xl">03</span>
+              <div class="h-px flex-1 max-w-24 decorative-line"></div>
+            </div>
+
+            <div class="animate-item" style="transition-delay: 100ms;">
+              <span class="text-sm uppercase tracking-widest text-foreground/40">Terceira Etapa</span>
+              <h2 class="mt-2 text-4xl font-light uppercase tracking-wide text-foreground lg:text-5xl">
+                Estudo Preliminar
+              </h2>
+            </div>
+
+            <p class="animate-item mt-6 max-w-lg text-lg leading-relaxed text-foreground/70" style="transition-delay: 200ms;">
+              Primeira materialização das ideias em plantas baixas, setorização e volumetria básica do projeto.
+            </p>
+
+            <div class="animate-item mt-8 space-y-4" style="transition-delay: 300ms;">
+              <div class="flex items-start gap-3 border-l-2 border-foreground/10 py-3 pl-5 transition-colors hover:border-primary">
+                <div>
+                  <p class="text-base font-medium text-foreground">Plantas Baixas</p>
+                  <p class="mt-1 text-sm text-foreground/50">Layout inicial de todos os pavimentos</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3 border-l-2 border-foreground/10 py-3 pl-5 transition-colors hover:border-primary">
+                <div>
+                  <p class="text-base font-medium text-foreground">Setorização</p>
+                  <p class="mt-1 text-sm text-foreground/50">Organização de áreas íntimas, sociais e serviço</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3 border-l-2 border-foreground/10 py-3 pl-5 transition-colors hover:border-primary">
+                <div>
+                  <p class="text-base font-medium text-foreground">Volumetria Básica</p>
+                  <p class="mt-1 text-sm text-foreground/50">Estudo de massas e proporções</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3 border-l-2 border-foreground/10 py-3 pl-5 transition-colors hover:border-primary">
+                <div>
+                  <p class="text-base font-medium text-foreground">Layout com Mobiliário</p>
+                  <p class="mt-1 text-sm text-foreground/50">Dimensionamento adequado dos ambientes</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="animate-item mt-8 inline-flex items-center gap-4 border border-foreground/20 px-6 py-4" style="transition-delay: 400ms;">
+              <svg class="h-6 w-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <div>
+                <span class="text-sm uppercase tracking-widest text-foreground/40">Prazo Estimado</span>
+                <p class="text-base font-medium text-foreground">15 dias úteis</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Image -->
+          <div class="animate-item relative aspect-[4/5] overflow-hidden" style="transition-delay: 200ms;">
+            <img 
+              src="https://images.unsplash.com/photo-1574362848149-11496d93a7c7?w=800&q=80" 
+              alt="Estudo Preliminar" 
+              class="h-full w-full object-cover"
+            >
+            <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+            <span class="absolute -right-8 bottom-8 text-[12rem] font-extralight leading-none text-white/10 lg:-right-12 lg:text-[16rem]">03</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FASE 04 - APRESENTAÇÃO DE FACHADAS -->
+    <section id="fase-4" class="relative min-h-screen paper-texture gradient-stone-to-silk">
+      <div class="mx-auto max-w-7xl px-8 py-24 lg:px-12 lg:py-32">
+        <div class="grid gap-16 lg:grid-cols-2 lg:gap-24 items-center">
+          <!-- Image (Left) -->
+          <div class="animate-item relative aspect-[4/5] overflow-hidden order-2 lg:order-1" style="transition-delay: 200ms;">
+            <img 
+              src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80" 
+              alt="Fachadas 3D" 
+              class="h-full w-full object-cover"
+            >
+            <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+            <span class="absolute -left-8 bottom-8 text-[12rem] font-extralight leading-none text-white/10 lg:-left-12 lg:text-[16rem]">04</span>
+            <!-- Video Play Icon -->
+            <div class="absolute inset-0 flex items-center justify-center">
+              <div class="flex h-20 w-20 items-center justify-center rounded-full bg-white/90 shadow-2xl transition-transform hover:scale-110 cursor-pointer">
+                <svg class="h-8 w-8 text-primary ml-1" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Content (Right) -->
+          <div class="order-1 lg:order-2">
+            <div class="animate-item mb-8 flex items-center gap-4">
+              <span class="text-6xl font-extralight text-primary lg:text-7xl">04</span>
+              <div class="h-px flex-1 max-w-24 decorative-line"></div>
+            </div>
+
+            <div class="animate-item" style="transition-delay: 100ms;">
+              <span class="text-sm uppercase tracking-widest text-foreground/40">Quarta Etapa</span>
+              <h2 class="mt-2 text-4xl font-light uppercase tracking-wide text-foreground lg:text-5xl">
+                Apresentação de Fachadas
+              </h2>
+            </div>
+
+            <p class="animate-item mt-6 max-w-lg text-lg leading-relaxed text-foreground/70" style="transition-delay: 200ms;">
+              Visualização realista do projeto com renderizações 3D de alta qualidade e vídeo walkthrough imersivo.
+            </p>
+
+            <div class="animate-item mt-8 space-y-4" style="transition-delay: 300ms;">
+              <div class="flex items-start gap-3 border-l-2 border-foreground/10 py-3 pl-5 transition-colors hover:border-primary">
+                <div>
+                  <p class="text-base font-medium text-foreground">Renders 3D Fotorrealistas</p>
+                  <p class="mt-1 text-sm text-foreground/50">Imagens de alta qualidade de todas as fachadas</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3 border-l-2 border-foreground/10 py-3 pl-5 transition-colors hover:border-primary">
+                <div>
+                  <p class="text-base font-medium text-foreground">Vídeo Walkthrough</p>
+                  <p class="mt-1 text-sm text-foreground/50">Passeio virtual pelo exterior do projeto</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3 border-l-2 border-foreground/10 py-3 pl-5 transition-colors hover:border-primary">
+                <div>
+                  <p class="text-base font-medium text-foreground">Estudos de Materiais</p>
+                  <p class="mt-1 text-sm text-foreground/50">Definição de acabamentos externos</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3 border-l-2 border-foreground/10 py-3 pl-5 transition-colors hover:border-primary">
+                <div>
+                  <p class="text-base font-medium text-foreground">Integração Paisagística</p>
+                  <p class="mt-1 text-sm text-foreground/50">Harmonização com o entorno</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="animate-item mt-8 inline-flex items-center gap-4 border border-foreground/20 px-6 py-4" style="transition-delay: 400ms;">
+              <svg class="h-6 w-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <div>
+                <span class="text-sm uppercase tracking-widest text-foreground/40">Prazo Estimado</span>
+                <p class="text-base font-medium text-foreground">10 dias úteis</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FASE 05 - PROJETOS COMPLEMENTARES -->
+    <section id="fase-5" class="relative min-h-screen paper-texture gradient-silk-to-pearl">
+      <div class="mx-auto max-w-7xl px-8 py-24 lg:px-12 lg:py-32">
+        <div class="grid gap-16 lg:grid-cols-2 lg:gap-24 items-center">
+          <!-- Content -->
+          <div>
+            <div class="animate-item mb-8 flex items-center gap-4">
+              <span class="text-6xl font-extralight text-primary lg:text-7xl">05</span>
+              <div class="h-px flex-1 max-w-24 decorative-line"></div>
+            </div>
+
+            <div class="animate-item" style="transition-delay: 100ms;">
+              <span class="text-sm uppercase tracking-widest text-foreground/40">Quinta Etapa</span>
+              <h2 class="mt-2 text-4xl font-light uppercase tracking-wide text-foreground lg:text-5xl">
+                Projetos Complementares
+              </h2>
+            </div>
+
+            <p class="animate-item mt-6 max-w-lg text-lg leading-relaxed text-foreground/70" style="transition-delay: 200ms;">
+              Detalhamento técnico dos sistemas que dão vida e conforto à sua residência, incluindo iluminação, decoração e interiores.
+            </p>
+
+            <div class="animate-item mt-8 space-y-4" style="transition-delay: 300ms;">
+              <div class="flex items-start gap-3 border-l-2 border-foreground/10 py-3 pl-5 transition-colors hover:border-primary">
+                <div>
+                  <p class="text-base font-medium text-foreground">Projeto de Iluminação</p>
+                  <p class="mt-1 text-sm text-foreground/50">Design de luz natural e artificial</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3 border-l-2 border-foreground/10 py-3 pl-5 transition-colors hover:border-primary">
+                <div>
+                  <p class="text-base font-medium text-foreground">Projeto de Interiores</p>
+                  <p class="mt-1 text-sm text-foreground/50">Exemplos de ambientação e decoração</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3 border-l-2 border-foreground/10 py-3 pl-5 transition-colors hover:border-primary">
+                <div>
+                  <p class="text-base font-medium text-foreground">Projeto Hidrossanitário</p>
+                  <p class="mt-1 text-sm text-foreground/50">Instalações de água e esgoto</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3 border-l-2 border-foreground/10 py-3 pl-5 transition-colors hover:border-primary">
+                <div>
+                  <p class="text-base font-medium text-foreground">Projeto Elétrico</p>
+                  <p class="mt-1 text-sm text-foreground/50">Instalações elétricas e automação</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3 border-l-2 border-foreground/10 py-3 pl-5 transition-colors hover:border-primary">
+                <div>
+                  <p class="text-base font-medium text-foreground">Projeto Estrutural</p>
+                  <p class="mt-1 text-sm text-foreground/50">Cálculo e dimensionamento estrutural</p>
+                </div>
+              </div>
+            </div>
+
+            <p class="animate-item mt-6 text-sm italic text-foreground/40" style="transition-delay: 400ms;">
+              * Projetos técnicos desenvolvidos por profissionais especializados indicados pelo escritório.
+            </p>
+
+            <div class="animate-item mt-8 inline-flex items-center gap-4 border border-foreground/20 px-6 py-4" style="transition-delay: 450ms;">
+              <svg class="h-6 w-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <div>
+                <span class="text-sm uppercase tracking-widest text-foreground/40">Prazo Estimado</span>
+                <p class="text-base font-medium text-foreground">20 dias úteis</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Image -->
+          <div class="animate-item relative aspect-[4/5] overflow-hidden" style="transition-delay: 200ms;">
+            <img 
+              src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=800&q=80" 
+              alt="Projetos Complementares" 
+              class="h-full w-full object-cover"
+            >
+            <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+            <span class="absolute -right-8 bottom-8 text-[12rem] font-extralight leading-none text-white/10 lg:-right-12 lg:text-[16rem]">05</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FASE 06 - PROJETO LEGAL -->
+    <section id="fase-6" class="relative min-h-screen paper-texture gradient-pearl-to-cream">
+      <div class="mx-auto max-w-7xl px-8 py-24 lg:px-12 lg:py-32">
+        <div class="grid gap-16 lg:grid-cols-2 lg:gap-24 items-center">
+          <!-- Image (Left) -->
+          <div class="animate-item relative aspect-[4/5] overflow-hidden order-2 lg:order-1" style="transition-delay: 200ms;">
+            <img 
+              src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&q=80" 
+              alt="Projeto Legal" 
+              class="h-full w-full object-cover"
+            >
+            <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+            <span class="absolute -left-8 bottom-8 text-[12rem] font-extralight leading-none text-white/10 lg:-left-12 lg:text-[16rem]">06</span>
+          </div>
+
+          <!-- Content (Right) -->
+          <div class="order-1 lg:order-2">
+            <div class="animate-item mb-8 flex items-center gap-4">
+              <span class="text-6xl font-extralight text-primary lg:text-7xl">06</span>
+              <div class="h-px flex-1 max-w-24 decorative-line"></div>
+            </div>
+
+            <div class="animate-item" style="transition-delay: 100ms;">
+              <span class="text-sm uppercase tracking-widest text-foreground/40">Sexta Etapa</span>
+              <h2 class="mt-2 text-4xl font-light uppercase tracking-wide text-foreground lg:text-5xl">
+                Projeto Legal e Aprovações
+              </h2>
+            </div>
+
+            <p class="animate-item mt-6 max-w-lg text-lg leading-relaxed text-foreground/70" style="transition-delay: 200ms;">
+              Documentação técnica completa para aprovação em órgãos competentes: condomínio e prefeitura.
+            </p>
+
+            <div class="animate-item mt-8 space-y-4" style="transition-delay: 300ms;">
+              <div class="flex items-start gap-3 border-l-2 border-foreground/10 py-3 pl-5 transition-colors hover:border-primary">
+                <div>
+                  <p class="text-base font-medium text-foreground">Aprovação no Condomínio</p>
+                  <p class="mt-1 text-sm text-foreground/50">Documentação conforme regras do loteamento</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3 border-l-2 border-foreground/10 py-3 pl-5 transition-colors hover:border-primary">
+                <div>
+                  <p class="text-base font-medium text-foreground">Projeto para Prefeitura</p>
+                  <p class="mt-1 text-sm text-foreground/50">Atendimento às normas municipais</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3 border-l-2 border-foreground/10 py-3 pl-5 transition-colors hover:border-primary">
+                <div>
+                  <p class="text-base font-medium text-foreground">Memorial Descritivo</p>
+                  <p class="mt-1 text-sm text-foreground/50">Especificações técnicas completas</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3 border-l-2 border-foreground/10 py-3 pl-5 transition-colors hover:border-primary">
+                <div>
+                  <p class="text-base font-medium text-foreground">ART/RRT</p>
+                  <p class="mt-1 text-sm text-foreground/50">Responsabilidade técnica registrada</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="animate-item mt-8 inline-flex items-center gap-4 border border-foreground/20 px-6 py-4" style="transition-delay: 400ms;">
+              <svg class="h-6 w-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <div>
+                <span class="text-sm uppercase tracking-widest text-foreground/40">Prazo Estimado</span>
+                <p class="text-base font-medium text-foreground">15 dias úteis + aprovação</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FASE 07 - COMPATIBILIZAÇÃO -->
+    <section id="fase-7" class="relative min-h-screen paper-texture gradient-cream-to-linen">
+      <div class="mx-auto max-w-7xl px-8 py-24 lg:px-12 lg:py-32">
+        <div class="grid gap-16 lg:grid-cols-2 lg:gap-24 items-center">
+          <!-- Content -->
+          <div>
+            <div class="animate-item mb-8 flex items-center gap-4">
+              <span class="text-6xl font-extralight text-primary lg:text-7xl">07</span>
+              <div class="h-px flex-1 max-w-24 decorative-line"></div>
+            </div>
+
+            <div class="animate-item" style="transition-delay: 100ms;">
+              <span class="text-sm uppercase tracking-widest text-foreground/40">Sétima Etapa</span>
+              <h2 class="mt-2 text-4xl font-light uppercase tracking-wide text-foreground lg:text-5xl">
+                Compatibilização
+              </h2>
+            </div>
+
+            <p class="animate-item mt-6 max-w-lg text-lg leading-relaxed text-foreground/70" style="transition-delay: 200ms;">
+              Integração e verificação de todos os projetos para garantir harmonia técnica e evitar conflitos na execução.
+            </p>
+
+            <div class="animate-item mt-8 space-y-4" style="transition-delay: 300ms;">
+              <div class="flex items-start gap-3 border-l-2 border-foreground/10 py-3 pl-5 transition-colors hover:border-primary">
+                <div>
+                  <p class="text-base font-medium text-foreground">Verificação de Interferências</p>
+                  <p class="mt-1 text-sm text-foreground/50">Análise de conflitos entre disciplinas</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3 border-l-2 border-foreground/10 py-3 pl-5 transition-colors hover:border-primary">
+                <div>
+                  <p class="text-base font-medium text-foreground">Ajustes Técnicos</p>
+                  <p class="mt-1 text-sm text-foreground/50">Correções e otimizações necessárias</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3 border-l-2 border-foreground/10 py-3 pl-5 transition-colors hover:border-primary">
+                <div>
+                  <p class="text-base font-medium text-foreground">Modelo Integrado</p>
+                  <p class="mt-1 text-sm text-foreground/50">Unificação de todas as informações</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3 border-l-2 border-foreground/10 py-3 pl-5 transition-colors hover:border-primary">
+                <div>
+                  <p class="text-base font-medium text-foreground">Revisão Final</p>
+                  <p class="mt-1 text-sm text-foreground/50">Validação completa do conjunto</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="animate-item mt-8 inline-flex items-center gap-4 border border-foreground/20 px-6 py-4" style="transition-delay: 400ms;">
+              <svg class="h-6 w-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <div>
+                <span class="text-sm uppercase tracking-widest text-foreground/40">Prazo Estimado</span>
+                <p class="text-base font-medium text-foreground">10 dias úteis</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Image -->
+          <div class="animate-item relative aspect-[4/5] overflow-hidden" style="transition-delay: 200ms;">
+            <img 
+              src="https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&q=80" 
+              alt="Compatibilização" 
+              class="h-full w-full object-cover"
+            >
+            <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+            <span class="absolute -right-8 bottom-8 text-[12rem] font-extralight leading-none text-white/10 lg:-right-12 lg:text-[16rem]">07</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FASE 08 - PROJETO EXECUTIVO -->
+    <section id="fase-8" class="relative min-h-screen paper-texture gradient-linen-to-rose">
+      <div class="mx-auto max-w-7xl px-8 py-24 lg:px-12 lg:py-32">
+        <div class="grid gap-16 lg:grid-cols-2 lg:gap-24 items-center">
+          <!-- Image (Left) -->
+          <div class="animate-item relative aspect-[4/5] overflow-hidden order-2 lg:order-1" style="transition-delay: 200ms;">
+            <img 
+              src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&q=80" 
+              alt="Projeto Executivo" 
+              class="h-full w-full object-cover"
+            >
+            <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+            <span class="absolute -left-8 bottom-8 text-[12rem] font-extralight leading-none text-white/10 lg:-left-12 lg:text-[16rem]">08</span>
+          </div>
+
+          <!-- Content (Right) -->
+          <div class="order-1 lg:order-2">
+            <div class="animate-item mb-8 flex items-center gap-4">
+              <span class="text-6xl font-extralight text-primary lg:text-7xl">08</span>
+              <div class="h-px flex-1 max-w-24 decorative-line"></div>
+            </div>
+
+            <div class="animate-item" style="transition-delay: 100ms;">
+              <span class="text-sm uppercase tracking-widest text-foreground/40">Oitava Etapa</span>
+              <h2 class="mt-2 text-4xl font-light uppercase tracking-wide text-foreground lg:text-5xl">
+                Projeto Executivo
+              </h2>
+            </div>
+
+            <p class="animate-item mt-6 max-w-lg text-lg leading-relaxed text-foreground/70" style="transition-delay: 200ms;">
+              Documentação completa e detalhada para execução da obra, com todas as especificações técnicas necessárias.
+            </p>
+
+            <div class="animate-item mt-8 space-y-4" style="transition-delay: 300ms;">
+              <div class="flex items-start gap-3 border-l-2 border-foreground/10 py-3 pl-5 transition-colors hover:border-primary">
+                <div>
+                  <p class="text-base font-medium text-foreground">Plantas Detalhadas</p>
+                  <p class="mt-1 text-sm text-foreground/50">Todas as cotas e especificações</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3 border-l-2 border-foreground/10 py-3 pl-5 transition-colors hover:border-primary">
+                <div>
+                  <p class="text-base font-medium text-foreground">Cortes e Elevações</p>
+                  <p class="mt-1 text-sm text-foreground/50">Detalhamento vertical completo</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3 border-l-2 border-foreground/10 py-3 pl-5 transition-colors hover:border-primary">
+                <div>
+                  <p class="text-base font-medium text-foreground">Detalhes Construtivos</p>
+                  <p class="mt-1 text-sm text-foreground/50">Soluções técnicas específicas</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3 border-l-2 border-foreground/10 py-3 pl-5 transition-colors hover:border-primary">
+                <div>
+                  <p class="text-base font-medium text-foreground">Caderno de Especificações</p>
+                  <p class="mt-1 text-sm text-foreground/50">Lista completa de materiais e acabamentos</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="animate-item mt-8 inline-flex items-center gap-4 border border-foreground/20 px-6 py-4" style="transition-delay: 400ms;">
+              <svg class="h-6 w-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <div>
+                <span class="text-sm uppercase tracking-widest text-foreground/40">Prazo Estimado</span>
+                <p class="text-base font-medium text-foreground">20 dias úteis</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- INVESTIMENTO -->
+    <section id="investimento" class="relative min-h-screen paper-texture" style="background: linear-gradient(180deg, #FBF9F8 0%, #F5F5F5 100%);">
+      <div class="mx-auto max-w-7xl px-8 py-24 lg:px-12 lg:py-32">
+        <!-- Header -->
+        <div class="animate-item mb-16">
+          <div class="flex items-center gap-4">
+            <span class="text-6xl font-extralight text-primary lg:text-7xl">09</span>
+            <div class="h-px flex-1 max-w-24 decorative-line"></div>
+          </div>
+          <span class="mt-8 block text-sm uppercase tracking-widest text-foreground/40">Investimento</span>
+          <h2 class="mt-2 text-4xl font-light uppercase tracking-wide text-foreground lg:text-5xl">
+            Condições Comerciais
+          </h2>
+        </div>
+
+        <!-- Valor Principal -->
+        <div class="animate-item mb-16" style="transition-delay: 100ms;">
+          <div class="bg-charcoal p-10 text-center lg:p-16">
+            <span class="text-sm uppercase tracking-widest text-white/40">Valor Total do Projeto</span>
+            <p class="mt-4 text-6xl font-extralight text-white lg:text-8xl">
+              R$ {{ valor_total }}
+            </p>
+            <p class="mt-4 text-lg text-white/60">
+              {{ metragem }}m² x R$ {{ valor_m2 }}/m²
+            </p>
+          </div>
+        </div>
+
+        <!-- Parcelas -->
+        <div class="animate-item mb-16" style="transition-delay: 200ms;">
+          <h3 class="mb-8 text-sm uppercase tracking-widest text-foreground/40">
+            Forma de Pagamento - 5x de 20%
+          </h3>
+          <div class="grid gap-4 md:grid-cols-5">
+            <div class="group border border-foreground/10 p-6 transition-colors hover:border-primary bg-white">
+              <span class="text-5xl font-extralight text-primary">1ª</span>
+              <p class="mt-4 text-sm uppercase tracking-widest text-foreground/40">No Ato</p>
+              <p class="mt-2 text-xl font-light text-foreground">R$ {{ parcela_20 }}</p>
+            </div>
+            <div class="group border border-foreground/10 p-6 transition-colors hover:border-primary bg-white">
+              <span class="text-5xl font-extralight text-primary">2ª</span>
+              <p class="mt-4 text-sm uppercase tracking-widest text-foreground/40">30 Dias</p>
+              <p class="mt-2 text-xl font-light text-foreground">R$ {{ parcela_20 }}</p>
+            </div>
+            <div class="group border border-foreground/10 p-6 transition-colors hover:border-primary bg-white">
+              <span class="text-5xl font-extralight text-primary">3ª</span>
+              <p class="mt-4 text-sm uppercase tracking-widest text-foreground/40">60 Dias</p>
+              <p class="mt-2 text-xl font-light text-foreground">R$ {{ parcela_20 }}</p>
+            </div>
+            <div class="group border border-foreground/10 p-6 transition-colors hover:border-primary bg-white">
+              <span class="text-5xl font-extralight text-primary">4ª</span>
+              <p class="mt-4 text-sm uppercase tracking-widest text-foreground/40">90 Dias</p>
+              <p class="mt-2 text-xl font-light text-foreground">R$ {{ parcela_20 }}</p>
+            </div>
+            <div class="group border border-foreground/10 p-6 transition-colors hover:border-primary bg-white">
+              <span class="text-5xl font-extralight text-primary">5ª</span>
+              <p class="mt-4 text-sm uppercase tracking-widest text-foreground/40">Na Entrega</p>
+              <p class="mt-2 text-xl font-light text-foreground">R$ {{ parcela_20 }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Incluso / Não Incluso -->
+        <div class="animate-item grid gap-8 lg:grid-cols-2" style="transition-delay: 300ms;">
+          <!-- Incluso -->
+          <div class="border border-foreground/10 p-8 bg-white">
+            <h3 class="mb-6 flex items-center gap-3 text-sm uppercase tracking-widest text-foreground">
+              <div class="flex h-7 w-7 items-center justify-center bg-primary">
+                <svg class="h-4 w-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+              </div>
+              Incluso no Valor
+            </h3>
+            <ul class="space-y-4">
+              <li class="flex items-start gap-3 text-base text-foreground/70">
+                <span class="text-primary">+</span>
+                Projeto Arquitetônico Completo
+              </li>
+              <li class="flex items-start gap-3 text-base text-foreground/70">
+                <span class="text-primary">+</span>
+                Renders 3D e Vídeo Walkthrough
+              </li>
+              <li class="flex items-start gap-3 text-base text-foreground/70">
+                <span class="text-primary">+</span>
+                Projeto Legal para Aprovação
+              </li>
+              <li class="flex items-start gap-3 text-base text-foreground/70">
+                <span class="text-primary">+</span>
+                Compatibilização de Projetos
+              </li>
+              <li class="flex items-start gap-3 text-base text-foreground/70">
+                <span class="text-primary">+</span>
+                Projeto Executivo Detalhado
+              </li>
+              <li class="flex items-start gap-3 text-base text-foreground/70">
+                <span class="text-primary">+</span>
+                ART/RRT Inclusos
+              </li>
+            </ul>
+          </div>
+
+          <!-- Não Incluso -->
+          <div class="border border-foreground/10 p-8 bg-white">
+            <h3 class="mb-6 flex items-center gap-3 text-sm uppercase tracking-widest text-foreground">
+              <div class="flex h-7 w-7 items-center justify-center bg-muted">
+                <svg class="h-4 w-4 text-foreground/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </div>
+              Não Incluso
+            </h3>
+            <ul class="space-y-4">
+              <li class="flex items-start gap-3 text-base text-foreground/50">
+                <span class="text-foreground/30">-</span>
+                Projeto Estrutural
+              </li>
+              <li class="flex items-start gap-3 text-base text-foreground/50">
+                <span class="text-foreground/30">-</span>
+                Projeto Hidrossanitário
+              </li>
+              <li class="flex items-start gap-3 text-base text-foreground/50">
+                <span class="text-foreground/30">-</span>
+                Projeto Elétrico
+              </li>
+              <li class="flex items-start gap-3 text-base text-foreground/50">
+                <span class="text-foreground/30">-</span>
+                Taxas de Aprovação
+              </li>
+              <li class="flex items-start gap-3 text-base text-foreground/50">
+                <span class="text-foreground/30">-</span>
+                Levantamento Topográfico
+              </li>
+            </ul>
+            <p class="mt-6 text-sm text-foreground/40">
+              * Projetos técnicos serão elaborados por profissionais indicados.
+            </p>
+          </div>
+        </div>
+
+        <!-- Observação -->
+        <div class="animate-item mt-12 border-l-2 border-primary py-4 pl-6" style="transition-delay: 400ms;">
+          <p class="text-base text-foreground/60">
+            <strong class="text-foreground">Acréscimo de área:</strong> Para cada metro quadrado aumentado no projeto será acrescido R$ {{ valor_m2 }}. Valor pode sofrer alteração conforme metragem final.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- TERMOS E CONDIÇÕES -->
+    <section id="termos" class="relative paper-texture bg-stone py-24">
+      <div class="mx-auto max-w-4xl px-8 lg:px-12">
+        <div class="animate-item mb-12 text-center">
+          <span class="text-sm uppercase tracking-widest text-foreground/40">Informações Legais</span>
+          <h2 class="mt-2 text-3xl font-light uppercase tracking-wide text-foreground lg:text-4xl">
+            Termos e Condições
+          </h2>
+        </div>
+
+        <!-- Accordions -->
+        <div class="animate-item space-y-4" style="transition-delay: 100ms;">
+          <!-- Accordion 1 -->
+          <div class="border border-foreground/10 bg-white">
+            <button class="accordion-trigger flex w-full items-center justify-between px-6 py-5 text-left" onclick="toggleAccordion(this)">
+              <span class="text-base font-medium text-foreground">1. Objeto do Contrato</span>
+              <svg class="accordion-icon h-5 w-5 text-foreground/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            <div class="accordion-content px-6 pb-0">
+              <p class="text-base text-foreground/70 pb-5">
+                O presente contrato tem por objeto a prestação de serviços de projeto arquitetônico residencial, compreendendo todas as etapas descritas nesta proposta, desde o estudo de implantação até o projeto executivo completo.
+              </p>
+            </div>
+          </div>
+
+          <!-- Accordion 2 -->
+          <div class="border border-foreground/10 bg-white">
+            <button class="accordion-trigger flex w-full items-center justify-between px-6 py-5 text-left" onclick="toggleAccordion(this)">
+              <span class="text-base font-medium text-foreground">2. Especificação dos Serviços</span>
+              <svg class="accordion-icon h-5 w-5 text-foreground/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            <div class="accordion-content px-6 pb-0">
+              <p class="text-base text-foreground/70 pb-5">
+                Os serviços incluem: estudo de implantação, briefing, estudo preliminar, apresentação de fachadas com vídeo, coordenação de projetos complementares, projeto legal para aprovação, compatibilização e projeto executivo detalhado.
+              </p>
+            </div>
+          </div>
+
+          <!-- Accordion 3 -->
+          <div class="border border-foreground/10 bg-white">
+            <button class="accordion-trigger flex w-full items-center justify-between px-6 py-5 text-left" onclick="toggleAccordion(this)">
+              <span class="text-base font-medium text-foreground">3. Obrigações do Contratante</span>
+              <svg class="accordion-icon h-5 w-5 text-foreground/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            <div class="accordion-content px-6 pb-0">
+              <p class="text-base text-foreground/70 pb-5">
+                O contratante deverá fornecer todas as informações necessárias, documentação do terreno, aprovar cada etapa dentro do prazo de 5 dias úteis e efetuar os pagamentos conforme acordado.
+              </p>
+            </div>
+          </div>
+
+          <!-- Accordion 4 -->
+          <div class="border border-foreground/10 bg-white">
+            <button class="accordion-trigger flex w-full items-center justify-between px-6 py-5 text-left" onclick="toggleAccordion(this)">
+              <span class="text-base font-medium text-foreground">4. Obrigações do Contratado</span>
+              <svg class="accordion-icon h-5 w-5 text-foreground/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            <div class="accordion-content px-6 pb-0">
+              <p class="text-base text-foreground/70 pb-5">
+                O contratado se compromete a executar os serviços com zelo profissional, cumprir os prazos estabelecidos, fornecer ART/RRT e prestar assistência técnica durante a aprovação do projeto.
+              </p>
+            </div>
+          </div>
+
+          <!-- Accordion 5 -->
+          <div class="border border-foreground/10 bg-white">
+            <button class="accordion-trigger flex w-full items-center justify-between px-6 py-5 text-left" onclick="toggleAccordion(this)">
+              <span class="text-base font-medium text-foreground">5. Validade da Proposta</span>
+              <svg class="accordion-icon h-5 w-5 text-foreground/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            <div class="accordion-content px-6 pb-0">
+              <p class="text-base text-foreground/70 pb-5">
+                Esta proposta tem validade de 30 (trinta) dias a partir da data de emissão. Após este período, os valores poderão ser reajustados.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER CTA -->
+    <footer class="bg-charcoal">
+      <!-- CTA -->
+      <div class="py-24 text-center lg:py-32">
+        <span class="text-sm uppercase tracking-widest text-white/40">Próximo Passo</span>
+        <h2 class="mt-4 text-4xl font-extralight text-white lg:text-5xl">
+          Pronto para transformar<br>seu sonho em realidade?
+        </h2>
+
+        <a href="{{ download_url }}" class="mt-10 inline-flex items-center gap-3 bg-primary px-10 py-5 text-base uppercase tracking-widest text-white transition-all hover:bg-primary-light">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+          </svg>
+          Baixar Contrato
+        </a>
+      </div>
+
+      <!-- Assinaturas -->
+      <div class="border-t border-white/10 px-8 py-16">
+        <div class="mx-auto max-w-4xl">
+          <p class="text-center text-base text-white/40">
+            São José dos Campos, {{ data_dia }} de {{ data_mes }} de {{ data_ano }}.
+          </p>
+
+          <div class="mt-12 grid gap-12 md:grid-cols-2">
+            <div class="text-center">
+              <div class="mx-auto h-px w-48 bg-white/20"></div>
+              <p class="mt-4 text-lg font-medium text-white">Eduardo Bevilacqua</p>
+              <p class="text-base text-white/40">CREA-SP 0600630932</p>
+              <p class="mt-2 text-sm uppercase tracking-widest text-white/30">Contratado</p>
+            </div>
+
+            <div class="text-center">
+              <div class="mx-auto h-px w-48 bg-white/20"></div>
+              <p class="mt-4 text-lg font-medium text-white">{{ nome_cliente }}</p>
+              <p class="text-base text-white/40">CPF: _________________</p>
+              <p class="mt-2 text-sm uppercase tracking-widest text-white/30">Contratante</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Info -->
+      <div class="border-t border-white/10 px-8 py-10">
+        <div class="mx-auto max-w-7xl">
+          <div class="flex flex-col items-center justify-between gap-8 lg:flex-row">
+            <div class="flex items-center gap-4">
+              <img
+                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/logo.png-9mRrvj28aRZ67rPbc0QVFN9MRd8ZjD.webp"
+                alt="Bevilacqua"
+                class="h-14 w-auto"
+              >
+              <div>
+                <p class="text-lg font-medium text-white">Bevilacqua Arquitetura e Engenharia</p>
+                <p class="text-sm text-white/40">48 anos de experiência</p>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-center gap-6 text-base text-white/40">
+              <div class="flex items-center gap-2">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                <span>Rua Viena, 203 - São José dos Campos</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                </svg>
+                <span>(12) 3942-8477</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                </svg>
+                <span>adm@bevilacqua.com.br</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-10 border-t border-white/10 pt-6 text-center">
+            <p class="text-sm text-white/30">
+              © {{ data_ano }} Bevilacqua Arquitetura e Engenharia. Todos os direitos reservados.
+            </p>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- JavaScript -->
+  <script>
+    // Scroll to section
+    function scrollToSection(sectionId) {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
+    // Toggle accordion
+    function toggleAccordion(button) {
+      const content = button.nextElementSibling;
+      const isOpen = content.classList.contains('open');
+      
+      // Close all accordions
+      document.querySelectorAll('.accordion-content').forEach(acc => {
+        acc.classList.remove('open');
+      });
+      document.querySelectorAll('.accordion-trigger').forEach(btn => {
+        btn.classList.remove('open');
+      });
+      
+      // Open clicked one if it was closed
+      if (!isOpen) {
+        content.classList.add('open');
+        button.classList.add('open');
+      }
+    }
+
+    // Intersection Observer for animations
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, observerOptions);
+
+    document.querySelectorAll('.animate-item').forEach(item => {
+      observer.observe(item);
+    });
+
+    // Section Observer for navigation
+    const sections = ['hero', 'fase-1', 'fase-2', 'fase-3', 'fase-4', 'fase-5', 'fase-6', 'fase-7', 'fase-8', 'investimento'];
+    const phaseLabels = ['00', '01', '02', '03', '04', '05', '06', '07', '08', '09'];
+
+    const sectionObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const sectionId = entry.target.id;
+          const index = sections.indexOf(sectionId);
+          
+          // Update navigation buttons
+          document.querySelectorAll('.nav-btn').forEach(btn => {
+            if (btn.dataset.section === sectionId) {
+              btn.classList.add('text-primary');
+              btn.classList.remove('text-white/40');
+            } else {
+              btn.classList.remove('text-primary');
+              btn.classList.add('text-white/40');
+            }
+          });
+          
+          // Update mobile navigation
+          document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+            if (btn.dataset.section === sectionId) {
+              btn.classList.add('text-primary');
+              btn.classList.remove('text-white/40');
+            } else {
+              btn.classList.remove('text-primary');
+              btn.classList.add('text-white/40');
+            }
+          });
+          
+          // Update current phase indicator
+          const currentPhase = document.getElementById('current-phase');
+          if (currentPhase) {
+            currentPhase.textContent = phaseLabels[index] || '00';
+          }
+          
+          // Update mobile phase label
+          const mobileLabel = document.getElementById('mobile-phase-label');
+          if (mobileLabel) {
+            mobileLabel.textContent = `Fase ${phaseLabels[index] || '00'}`;
+          }
+          
+          // Update progress
+          const progress = ((index + 1) / sections.length) * 100;
+          const progressIndicator = document.getElementById('progress-indicator');
+          const mobileProgress = document.getElementById('mobile-progress');
+          if (progressIndicator) {
+            progressIndicator.style.height = `${progress}%`;
+          }
+          if (mobileProgress) {
+            mobileProgress.style.width = `${progress}%`;
+          }
+        }
+      });
+    }, { threshold: 0.3 });
+
+    sections.forEach(sectionId => {
+      const section = document.getElementById(sectionId);
+      if (section) {
+        sectionObserver.observe(section);
+      }
+    });
+  </script>
+
+</body>
+</html>
