@@ -1,4 +1,5 @@
 type QueryValue = string | string[] | undefined;
+const BACKEND_URL = process.env.BACKEND_URL?.trim().replace(/\/$/, "");
 
 export interface PropostaData {
   nomeCliente: string;
@@ -94,7 +95,9 @@ export function buildPropostaData(searchParams: Record<string, QueryValue>): Pro
     dataDia,
     dataMes,
     dataAno,
-    downloadUrl: `http://localhost:5000/gerar-pdf?${pdfParams.toString()}`,
+    downloadUrl: BACKEND_URL
+      ? `${BACKEND_URL}/gerar-pdf?${pdfParams.toString()}`
+      : "#",
   };
 }
 

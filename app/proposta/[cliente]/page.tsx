@@ -6,9 +6,13 @@ interface SharedPropostaPageProps {
   params: Promise<{ cliente: string }>;
 }
 
-const BACKEND_URL = process.env.BACKEND_URL ?? "http://127.0.0.1:5000";
+const BACKEND_URL = process.env.BACKEND_URL?.trim().replace(/\/$/, "");
 
 export default async function SharedPropostaPage({ params }: SharedPropostaPageProps) {
+  if (!BACKEND_URL) {
+    return <main className="p-8">Defina BACKEND_URL para abrir links salvos por cliente.</main>;
+  }
+
   const { cliente } = await params;
   const response = await fetch(`${BACKEND_URL}/proposta-dados/${encodeURIComponent(cliente)}`, {
     cache: "no-store",

@@ -17,6 +17,7 @@ interface PhaseSectionProps {
   description: string;
   items: PhaseItem[];
   image: string;
+  images?: string[];
   variant?: "light" | "dark";
   note?: string;
   sectionIndex?: number;
@@ -30,6 +31,7 @@ export function PhaseSection({
   description,
   items,
   image,
+  images = [],
   variant = "light",
   note,
   sectionIndex = 0,
@@ -57,16 +59,14 @@ export function PhaseSection({
 
   const isDark = variant === "dark";
   const sectionIdx = Number.parseInt(number, 10) || sectionIndex + 1;
-  const getCinematicRevealClass = (idx: number) => {
-    const stage = idx <= 3 ? "intro" : idx <= 6 ? "middle" : "outro";
-    const direction = idx % 3 === 1 ? "left" : idx % 3 === 2 ? "right" : "zoom";
-
-    if (stage === "intro") return `cinematic-intro-${direction}`;
-    if (stage === "middle") return `cinematic-middle-${direction}`;
-    return `cinematic-outro-${direction}`;
+  const getPhaseSpecificClass = (idx: number, type: 'entrance' | 'title' | 'subtitle') => {
+    const phaseNum = (idx % 8) + 1;
+    return `${type}-phase-${phaseNum}`;
   };
 
-  const revealClass = getCinematicRevealClass(sectionIdx);
+  const entranceClass = getPhaseSpecificClass(sectionIdx, 'entrance');
+  const titleClass = getPhaseSpecificClass(sectionIdx, 'title');
+  const subtitleClass = getPhaseSpecificClass(sectionIdx, 'subtitle');
 
   const imageMotionClass =
     sectionIdx <= 3
@@ -76,6 +76,15 @@ export function PhaseSection({
           ? "cinematic-image-middle-a"
           : "cinematic-image-middle-b"
         : "cinematic-image-outro";
+
+  // Adiciona animação sutil de zoom/afastamento apenas em algumas seções específicas
+  const getSubtleImageAnimation = (idx: number) => {
+    if (idx === 2 || idx === 5) return "animate-subtle-zoom-in";
+    if (idx === 4 || idx === 7) return "animate-subtle-zoom-out";
+    return "";
+  };
+
+  const subtleImageClass = getSubtleImageAnimation(sectionIdx);
 
   return (
     <section
@@ -110,20 +119,21 @@ export function PhaseSection({
           <div className="animate-item mb-8 flex items-center gap-4 duration-700">
             <span
               className={cn(
-                "text-6xl font-extralight lg:text-7xl",
+                "text-6xl font-extralight lg:text-7xl animate-bounce-entrance",
                 isDark ? "text-primary" : "text-primary"
               )}
             >
               {number}
             </span>
-            <div className="elegant-divider h-px flex-1 max-w-32" />
+            <div className="elegant-divider h-px flex-1 max-w-32 animate-staggered-fade" style={{ animationDelay: "100ms" }} />
           </div>
 
           {/* Title */}
-          <div className={`animate-item ${revealClass} duration-700`} style={{ transitionDelay: "110ms" }}>
+          <div className={`animate-item ${entranceClass} duration-700`} style={{ transitionDelay: "110ms" }}>
             <span
               className={cn(
                 "text-xs uppercase tracking-[0.15em] md:text-sm",
+                subtitleClass,
                 isDark ? "text-background/40" : "text-foreground/40"
               )}
             >
@@ -132,6 +142,7 @@ export function PhaseSection({
             <h2
               className={cn(
                 "mt-2 text-balance text-3xl font-medium uppercase tracking-wide sm:text-4xl lg:text-5xl",
+                titleClass,
                 isDark ? "text-background" : "text-foreground"
               )}
             >
@@ -142,7 +153,7 @@ export function PhaseSection({
           {/* Description */}
           <p
             className={cn(
-              `animate-item ${revealClass} mt-5 max-w-xl text-pretty text-base leading-relaxed duration-700 sm:text-lg`,
+              `animate-item ${entranceClass} mt-5 max-w-xl text-pretty text-base leading-relaxed duration-700 sm:text-lg`,
               isDark ? "text-background/70" : "text-foreground/70"
             )}
             style={{ transitionDelay: "230ms" }}
@@ -151,24 +162,26 @@ export function PhaseSection({
           </p>
 
           {/* Items */}
-          <div className={`animate-item ${revealClass} mt-8 space-y-4 duration-700`} style={{ transitionDelay: "330ms" }}>
+          <div className={`animate-item ${entranceClass} mt-8 space-y-4 duration-700`} style={{ transitionDelay: "330ms" }}>
             {items.map((item, idx) => (
               <div
                 key={idx}
                 className={cn(
-                  "group flex items-start gap-3 rounded-r-md border-l-2 py-3 pl-4 pr-3 transition-all duration-500 sm:pl-5 sm:pr-4",
+                  "group flex items-start gap-3 rounded-r-md border-l-2 py-3 pl-4 pr-3 transition-all duration-500 sm:pl-5 sm:pr-4 hover-glow",
                   isDark
                     ? "border-background/20 hover:border-primary hover:bg-background/0"
                     : "border-foreground/20 hover:border-primary hover:bg-foreground/0"
                 )}
+                style={{ animationDelay: `${330 + idx * 100}ms` }}
               >
-                <span className={cn("mt-1 h-2 w-2 rounded-full bg-primary/70 transition-transform duration-500 group-hover:scale-125")} />
+                <span className={cn("mt-1 h-2 w-2 rounded-full bg-primary/70 transition-transform duration-500 group-hover:scale-125 animate-pulse-scale")} />
                 <div>
                   <p
                     className={cn(
-                      "text-base font-medium sm:text-lg",
+                      "text-base font-medium sm:text-lg animate-staggered-fade",
                       isDark ? "text-background" : "text-foreground"
                     )}
+                    style={{ animationDelay: `${350 + idx * 100}ms` }}
                   >
                     {item.title}
                   </p>
@@ -191,7 +204,7 @@ export function PhaseSection({
           {note && (
             <p
               className={cn(
-                `animate-item ${revealClass} mt-6 text-sm italic duration-700`,
+                `animate-item ${entranceClass} mt-6 text-sm italic duration-700`,
                 isDark ? "text-background/40" : "text-foreground/40"
               )}
               style={{ transitionDelay: "430ms" }}
@@ -203,23 +216,53 @@ export function PhaseSection({
         </div>
 
         {/* Image */}
-        <div className={cn("animate-item relative mt-6 aspect-[4/5] w-full flex-1 overflow-hidden rounded-2xl border border-foreground/20 shadow-[0_18px_40px_rgba(0,0,0,0.16)] duration-1000 lg:mt-0 lg:aspect-auto lg:h-[72vh]", revealClass)}>
-          <Image
-            src={image}
-            alt={title}
-            fill
-            className={`object-cover transition-transform duration-[1400ms] hover:scale-[1.045] ${imageMotionClass}`}
-          />
-          {/* Overlay gradient */}
-          <div
-            className={cn(
-              "absolute inset-0",
-              isDark
-                ? "bg-gradient-to-t from-foreground/50 to-transparent"
-                : "bg-gradient-to-t from-background/30 to-transparent"
-            )}
-          />
-        </div>
+        {images.length >= 3 ? (
+          <div className={cn("animate-item mt-6 grid w-full flex-1 grid-cols-2 gap-4 lg:mt-0 lg:h-[72vh]", entranceClass)}>
+            {images.slice(0, 3).map((img, idx) => (
+              <div
+                key={idx}
+                className={cn(
+                  "relative overflow-hidden rounded-2xl border border-foreground/20 shadow-[0_18px_40px_rgba(0,0,0,0.16)] hover-glow",
+                  idx === 0 ? "col-span-2 h-[42vh] lg:h-[42vh]" : "h-[28vh] lg:h-[28vh]"
+                )}
+                style={{ animationDelay: `${200 + idx * 150}ms` }}
+              >
+                <Image
+                  src={img}
+                  alt={`${title} ${idx + 1}`}
+                  fill
+                  className={`object-cover transition-transform duration-[1400ms] ${imageMotionClass} ${subtleImageClass}`}
+                />
+                <div
+                  className={cn(
+                    "absolute inset-0",
+                    isDark
+                      ? "bg-gradient-to-t from-foreground/50 to-transparent"
+                      : "bg-gradient-to-t from-background/30 to-transparent"
+                  )}
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className={cn("animate-item relative mt-6 aspect-[4/5] w-full flex-1 overflow-hidden rounded-2xl border border-foreground/20 shadow-[0_18px_40px_rgba(0,0,0,0.16)] duration-1000 lg:mt-0 lg:aspect-auto lg:h-[72vh] hover-glow", entranceClass)}>
+            <Image
+              src={image}
+              alt={title}
+              fill
+              className={`object-cover transition-transform duration-[1400ms] ${imageMotionClass} ${subtleImageClass}`}
+            />
+            {/* Overlay gradient */}
+            <div
+              className={cn(
+                "absolute inset-0",
+                isDark
+                  ? "bg-gradient-to-t from-foreground/50 to-transparent"
+                  : "bg-gradient-to-t from-background/30 to-transparent"
+              )}
+            />
+          </div>
+        )}
       </div>
     </section>
   );
