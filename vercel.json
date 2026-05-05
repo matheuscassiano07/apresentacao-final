@@ -6,13 +6,17 @@
   "functionsDirectory": ".next",
   "routes": [
     {
-      "src": "/apresentacao",
+      "src": "/",
       "dest": "/"
+    },
+    {
+      "src": "/apresentacao",
+      "dest": "/apresentacao"
     }
   ],
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/apresentacao/(.*)",
       "destination": "/apresentacao/$1"
     }
   ]
