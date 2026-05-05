@@ -10,37 +10,49 @@ Para atualizar as imagens da apresentação, simplesmente substitua os arquivos 
    - Dimensão recomendada: 1920x1080px
    - Formato: JPG ou PNG
 
-2. **phase-01.jpg** - Imagem da Primeira Etapa
+2. **phase-01.jpg** - Imagem da Implantação
    - Dimensão recomendada: 1200x800px
    - Formato: JPG ou PNG
 
-3. **phase-02.jpg** - Imagem da Segunda Etapa
+3. **phase-02.jpg** - Imagem do Briefing
    - Dimensão recomendada: 1200x800px
    - Formato: JPG ou PNG
 
-4. **phase-03.jpg** - Imagem da Terceira Etapa
+4. **phase-03.jpg** - Imagem do Conceito (principal)
    - Dimensão recomendada: 1200x800px
    - Formato: JPG ou PNG
 
-5. **phase-04.jpg** - Imagem da Quarta Etapa
+5. **phase-03-1.jpg** - Imagem adicional do Conceito
    - Dimensão recomendada: 1200x800px
    - Formato: JPG ou PNG
 
-6. **phase-05.jpg** - Imagem da Quinta Etapa
+6. **phase-03-2.jpg** - Imagem adicional do Conceito
    - Dimensão recomendada: 1200x800px
    - Formato: JPG ou PNG
 
-7. **phase-06.jpg** - Imagem da Sexta Etapa
+7. **phase-03-3.jpg** - Imagem adicional do Conceito
    - Dimensão recomendada: 1200x800px
    - Formato: JPG ou PNG
 
-8. **phase-07.jpg** - Imagem da Sétima Etapa
+8. **phase-04.jpg** - Imagem da Visualização
    - Dimensão recomendada: 1200x800px
    - Formato: JPG ou PNG
 
-9. **phase-08.jpg** - Imagem da Oitava Etapa
+9. **phase-05.jpg** - Imagem do Detalhamento
    - Dimensão recomendada: 1200x800px
    - Formato: JPG ou PNG
+
+10. **phase-06.jpg** - Imagem da Regularização
+    - Dimensão recomendada: 1200x800px
+    - Formato: JPG ou PNG
+
+11. **phase-07.jpg** - Imagem da Integração
+    - Dimensão recomendada: 1200x800px
+    - Formato: JPG ou PNG
+
+12. **phase-08.jpg** - Imagem da Construção
+    - Dimensão recomendada: 1200x800px
+    - Formato: JPG ou PNG
 
 ## Animações Implementadas
 

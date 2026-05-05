@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import { Link2 } from "lucide-react";
-import { PhaseNavigation } from "@/components/proposta/phase-navigation";
 import { PhaseHero } from "@/components/proposta/phase-hero";
 import { PhaseSection } from "@/components/proposta/phase-section";
 import { CallToAction } from "@/components/proposta/call-to-action";
@@ -64,9 +63,7 @@ export function PropostaEditorPage({
   }), []);
 
   return (
-    <main className="relative pb-20 lg:pb-0 lg:pl-20">
-      <PhaseNavigation />
-
+    <main className="relative pb-20 lg:pb-0">
       <PhaseHero
         nomeCliente={propostaData.nomeCliente}
         dataValidade={propostaData.dataValidade}

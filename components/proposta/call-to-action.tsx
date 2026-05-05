@@ -17,7 +17,7 @@ export function CallToAction() {
   };
 
   return (
-    <section className="relative w-full bg-gradient-to-br from-foreground to-foreground/95 py-20 lg:py-32">
+    <section id="call-to-action" className="relative w-full bg-gradient-to-br from-foreground to-foreground/95 py-20 lg:py-32">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div 

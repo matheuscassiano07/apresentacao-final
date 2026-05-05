@@ -13,7 +13,7 @@ export function buildPropostaPhases(cidade: string, condominio: string) {
         { title: "Estudo de Acessos", description: "Definição de entradas e circulações" },
         { title: "Prazo Estimado", description: "5 dias úteis" },
       ],
-      image: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800&q=80",
+      image: "/images/phase-01.jpg",
       variant: "light" as const,
     },
     {
@@ -30,7 +30,7 @@ export function buildPropostaPhases(cidade: string, condominio: string) {
         { title: "Definição de Orçamento", description: "Alinhamento de expectativas financeiras" },
         { title: "Prazo Estimado", description: "3 dias úteis" },
       ],
-      image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80",
+      image: "/images/phase-02.jpg",
       variant: "dark" as const,
     },
     {
@@ -47,11 +47,11 @@ export function buildPropostaPhases(cidade: string, condominio: string) {
         { title: "Layout com Mobiliário", description: "Dimensionamento adequado dos ambientes" },
         { title: "Prazo Estimado", description: "15 dias úteis" },
       ],
-      image: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&q=80",
+      image: "/images/phase-03.jpg",
       images: [
-        "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&q=80",
-        "https://images.unsplash.com/photo-1505691938895-1758d7feb511?w=800&q=80",
-        "https://images.unsplash.com/photo-1493666438817-866a91353ca9?w=800&q=80",
+        "/images/phase-03-1.jpg",
+        "/images/phase-03-2.jpg",
+        "/images/phase-03-3.jpg",
       ],
       variant: "light" as const,
     },
@@ -69,7 +69,7 @@ export function buildPropostaPhases(cidade: string, condominio: string) {
         { title: "Integração Paisagística", description: "Harmonização com o entorno" },
         { title: "Prazo Estimado", description: "15 dias úteis" },
       ],
-      image: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=800&q=80",
+      image: "/images/phase-04.jpg",
       variant: "dark" as const,
     },
     {
@@ -87,7 +87,7 @@ export function buildPropostaPhases(cidade: string, condominio: string) {
         { title: "Projeto Estrutural", description: "Cálculo e dimensionamento estrutural" },
         { title: "Prazo Estimado", description: "20 dias úteis" },
       ],
-      image: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&q=80",
+      image: "/images/phase-05.jpg",
       variant: "light" as const,
       note: "* Projetos técnicos desenvolvidos por profissionais especializados indicados pelo escritório.",
     },
@@ -105,7 +105,7 @@ export function buildPropostaPhases(cidade: string, condominio: string) {
         { title: "ART/RRT", description: "Responsabilidade técnica registrada" },
         { title: "Prazo Estimado", description: "15 dias úteis + aprovação" },
       ],
-      image: "https://images.unsplash.com/photo-1518005020951-eccb494ad742?w=800&q=80",
+      image: "/images/phase-06.jpg",
       variant: "dark" as const,
     },
     {
@@ -122,7 +122,7 @@ export function buildPropostaPhases(cidade: string, condominio: string) {
         { title: "Revisão Final", description: "Validação completa do conjunto" },
         { title: "Prazo Estimado", description: "10 dias úteis" },
       ],
-      image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&q=80",
+      image: "/images/phase-07.jpg",
       variant: "dark" as const,
     },
     {
@@ -139,7 +139,7 @@ export function buildPropostaPhases(cidade: string, condominio: string) {
         { title: "Caderno de Especificações", description: "Lista completa de materiais e acabamentos" },
         { title: "Prazo Estimado", description: "20 dias úteis" },
       ],
-      image: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&q=80",
+      image: "/images/phase-08.jpg",
       variant: "light" as const,
     },
   ];
