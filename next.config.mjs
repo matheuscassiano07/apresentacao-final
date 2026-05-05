@@ -5,7 +5,13 @@ const nextConfig = {
   },
   images: {
     unoptimized: true,
+    domains: ['bevilacqua.com.br'],
   },
+  trailingSlash: {
+    source: true,
+  },
+  assetPrefix: process.env.NODE_ENV === 'production' ? '' : '',
+  output: 'standalone',
 }
 
-export default nextConfig
+export default nextConfig;
