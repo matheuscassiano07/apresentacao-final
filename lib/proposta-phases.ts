@@ -2,6 +2,7 @@ export function buildPropostaPhases(cidade: string, condominio: string) {
   return [
     {
       id: "etapa-1",
+      //teste
       number: "01",
       title: "Implantação",
       subtitle: "Estudo do Terreno",
@@ -108,6 +109,7 @@ export function buildPropostaPhases(cidade: string, condominio: string) {
       image: "/images/phase-06.jpg",
       variant: "dark" as const,
     },
+
     {
       id: "etapa-7",
       number: "07",
