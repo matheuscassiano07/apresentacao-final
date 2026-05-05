@@ -3,21 +3,6 @@
   "outputDirectory": ".next",
   "installCommand": "npm install",
   "framework": "nextjs",
-  "functionsDirectory": ".next",
-  "routes": [
-    {
-      "src": "/",
-      "dest": "/"
-    },
-    {
-      "src": "/apresentacao",
-      "dest": "/apresentacao"
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/apresentacao/(.*)",
-      "destination": "/apresentacao/$1"
-    }
-  ]
+  "cleanUrls": true,
+  "trailingSlash": true
 }
