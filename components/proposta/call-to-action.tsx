@@ -6,7 +6,8 @@ export function CallToAction() {
   const whatsappNumber = "5512997145577";
   const whatsappMessage = "Olá! Vi a apresentação e gostaria de mais informações.";
   const websiteUrl = "https://bevilacqua.com.br";
-  const instagramUrl = "https://www.instagram.com/bevilacquaarquitetura/";
+  const instagramArquiteturaUrl = "https://www.instagram.com/bevilacquaarquitetura/";
+  const instagramInterioresUrl = "https://www.instagram.com/bevilacquainteriores/";
 
   const handleWhatsAppClick = () => {
     const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
@@ -18,7 +19,7 @@ export function CallToAction() {
   };
 
   const handleInstagramClick = () => {
-    window.open(instagramUrl, "_blank");
+    window.open(instagramArquiteturaUrl, "_blank");
   };
 
   return (
@@ -90,6 +91,40 @@ export function CallToAction() {
           </p>
         </div>
       </div>
+
+      <footer className="relative z-10 mt-16 border-t border-background/10 px-6 pb-10 pt-10 lg:px-12">
+        <nav
+          className="mx-auto flex max-w-4xl flex-col items-center justify-center gap-4 text-center sm:flex-row sm:flex-wrap sm:gap-x-10 sm:gap-y-3"
+          aria-label="Instagram Bevilacqua"
+        >
+          <a
+            href={instagramInterioresUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-sm text-background/70 underline-offset-4 transition-colors hover:text-background hover:underline"
+          >
+            <Instagram className="h-4 w-4 shrink-0 text-[#E1306C]" aria-hidden />
+            <span>
+              <span className="font-medium text-background/90">Design de interiores</span>
+              <span className="text-background/50"> · </span>
+              <span>@bevilacquainteriores</span>
+            </span>
+          </a>
+          <a
+            href={instagramArquiteturaUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-sm text-background/70 underline-offset-4 transition-colors hover:text-background hover:underline"
+          >
+            <Instagram className="h-4 w-4 shrink-0 text-[#E1306C]" aria-hidden />
+            <span>
+              <span className="font-medium text-background/90">Arquitetura e engenharia</span>
+              <span className="text-background/50"> · </span>
+              <span>@bevilacquaarquitetura</span>
+            </span>
+          </a>
+        </nav>
+      </footer>
     </section>
   );
 }
