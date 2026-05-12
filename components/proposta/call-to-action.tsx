@@ -3,7 +3,7 @@
 import { Phone, Globe, Instagram } from "lucide-react";
 
 export function CallToAction() {
-  const whatsappNumber = "55119999999999"; // Substitua pelo número real
+  const whatsappNumber = "5512997145577";
   const whatsappMessage = "Olá! Vi a apresentação e gostaria de mais informações.";
   const websiteUrl = "https://bevilacqua.com.br";
   const instagramUrl = "https://www.instagram.com/bevilacquaarquitetura/";
