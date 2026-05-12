@@ -244,6 +244,44 @@ export function PhaseSection({
               </div>
             ))}
           </div>
+        ) : images.length === 2 ? (
+          <div className={cn("animate-item mt-6 flex w-full flex-1 flex-col gap-4 lg:mt-0 lg:flex-[1.8]", entranceClass)}>
+            {/* Horizontal (paisagem) - imagem inteira visível */}
+            <div
+              className={cn(
+                "relative aspect-[16/9] w-full overflow-hidden rounded-[1.75rem] border border-foreground/20 shadow-[0_18px_40px_rgba(0,0,0,0.16)] hover-glow",
+                isDark ? "bg-foreground" : "bg-background"
+              )}
+              style={{ animationDelay: "200ms" }}
+            >
+              <Image
+                src={images[0]}
+                alt={`${title} 1`}
+                fill
+                className={`object-contain transition-transform duration-[1400ms] ${imageMotionClass} ${subtleImageClass}`}
+              />
+            </div>
+            {/* Vertical (quadrada) */}
+            <div
+              className="relative mx-auto aspect-square w-3/4 max-w-sm overflow-hidden rounded-[1.75rem] border border-foreground/20 shadow-[0_18px_40px_rgba(0,0,0,0.16)] hover-glow lg:ml-auto lg:mr-0 lg:w-[60%] lg:max-w-none"
+              style={{ animationDelay: "350ms" }}
+            >
+              <Image
+                src={images[1]}
+                alt={`${title} 2`}
+                fill
+                className={`object-cover transition-transform duration-[1400ms] ${imageMotionClass} ${subtleImageClass}`}
+              />
+              <div
+                className={cn(
+                  "absolute inset-0",
+                  isDark
+                    ? "bg-gradient-to-t from-foreground/50 to-transparent"
+                    : "bg-gradient-to-t from-background/30 to-transparent"
+                )}
+              />
+            </div>
+          </div>
         ) : (
           <div className={cn("animate-item relative mt-6 aspect-[4/5] w-full flex-1 overflow-hidden rounded-2xl border border-foreground/20 shadow-[0_18px_40px_rgba(0,0,0,0.16)] duration-1000 lg:mt-0 lg:aspect-auto lg:h-[72vh] hover-glow", entranceClass)}>
             <Image

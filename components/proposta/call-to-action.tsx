@@ -1,11 +1,12 @@
 "use client";
 
-import { Phone, Globe } from "lucide-react";
+import { Phone, Globe, Instagram } from "lucide-react";
 
 export function CallToAction() {
   const whatsappNumber = "55119999999999"; // Substitua pelo número real
   const whatsappMessage = "Olá! Vi a apresentação e gostaria de mais informações.";
   const websiteUrl = "https://bevilacqua.com.br";
+  const instagramUrl = "https://www.instagram.com/bevilacquaarquitetura/";
 
   const handleWhatsAppClick = () => {
     const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
@@ -14,6 +15,10 @@ export function CallToAction() {
 
   const handleWebsiteClick = () => {
     window.open(websiteUrl, "_blank");
+  };
+
+  const handleInstagramClick = () => {
+    window.open(instagramUrl, "_blank");
   };
 
   return (
@@ -55,6 +60,16 @@ export function CallToAction() {
             <Globe className="h-5 w-5 transition-transform duration-300 group-hover:rotate-12" />
             <span className="text-lg font-medium">Visite nosso site</span>
             <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+          </button>
+
+          {/* Botão Instagram */}
+          <button
+            onClick={handleInstagramClick}
+            className="group relative flex items-center justify-center gap-3 rounded-xl bg-[#E1306C] px-8 py-4 text-white shadow-[0_20px_40px_rgba(225,48,108,0.3)] transition-all duration-300 hover:-translate-y-2 hover:scale-[1.02] hover:shadow-[0_25px_50px_rgba(225,48,108,0.4)] sm:w-auto w-full"
+          >
+            <Instagram className="h-5 w-5 transition-transform duration-300 group-hover:rotate-12" />
+            <span className="text-lg font-medium">Ver Instagram</span>
+            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
           </button>
 
           {/* Botão WhatsApp */}

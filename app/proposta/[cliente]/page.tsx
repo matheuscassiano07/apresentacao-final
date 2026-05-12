@@ -23,6 +23,6 @@ export default async function SharedPropostaPage({ params }: SharedPropostaPageP
 
   const payload = await response.json();
   const propostaData = buildPropostaData(payload);
-  const phases = buildPropostaPhases(propostaData.cidade, propostaData.condominio);
+  const phases = buildPropostaPhases();
   return <PropostaEditorPage propostaData={propostaData} phases={phases} isReadonly />;
 }

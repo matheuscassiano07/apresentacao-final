@@ -5,13 +5,19 @@ const nextConfig = {
   },
   images: {
     unoptimized: true,
-    domains: ['bevilacqua.com.br'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'bevilacqua.com.br',
+      },
+    ],
   },
-  trailingSlash: {
-    source: true,
-  },
+  trailingSlash: true,
   assetPrefix: process.env.NODE_ENV === 'production' ? '' : '',
   output: 'standalone',
+  turbopack: {
+    root: process.cwd(),
+  },
 }
 
 export default nextConfig;

@@ -48,6 +48,7 @@ export function FooterCTA({
             Download do contrato indisponível sem backend configurado.
           </p>
         )}
+
       </div>
 
       {/* Assinaturas */}

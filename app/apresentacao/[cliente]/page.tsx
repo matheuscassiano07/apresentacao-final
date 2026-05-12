@@ -24,6 +24,6 @@ export default async function ApresentacaoClientePage({ params }: ApresentacaoCl
 
   const payload = await response.json();
   const propostaData = buildPropostaData(payload);
-  const phases = buildPropostaPhases(propostaData.cidade, propostaData.condominio);
+  const phases = buildPropostaPhases();
   return <PropostaEditorPage propostaData={propostaData} phases={phases} />;
 }
