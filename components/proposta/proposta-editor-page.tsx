@@ -53,7 +53,7 @@ export function PropostaEditorPage({
   const heroImage = "/images/hero-bg.jpg";
   const phaseImages = useMemo(() => ({
     "phase-1": "/images/phase-01.jpg",
-    "phase-2": "/images/phase-02.jpg", 
+    "phase-2": "/images/phase-02.png", 
     "phase-3": "/images/phase-03.jpg",
     "phase-4": "/images/phase-04.jpg",
     "phase-5": "/images/phase-05.jpg",

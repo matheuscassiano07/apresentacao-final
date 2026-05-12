@@ -1,6 +1,6 @@
 export function buildPropostaPhases() {
   const phaseImage01 = "/images/phase-01.jpg";
-  const phaseImage02 = "/images/phase-02.jpg";
+  const phaseImage02 = "/images/phase-02.png";
   const phaseImage03 = "/images/phase-03.jpg";
   const phaseImage04 = "/images/phase-04.jpg";
   const phaseImage05 = "/images/phase-05.jpg";
