@@ -48,41 +48,28 @@ export function CallToAction() {
         </div>
 
         {/* Botões de Ação */}
-        <div className="flex flex-col gap-6 sm:flex-row sm:justify-center">
-          {/* Botão Website */}
+        <nav
+          className="flex flex-col gap-6 sm:flex-row sm:flex-wrap sm:justify-center"
+          aria-label="Contato e Instagram Bevilacqua"
+        >
           <button
             onClick={handleWebsiteClick}
-            className="group relative flex items-center justify-center gap-3 rounded-xl bg-background px-8 py-4 text-foreground shadow-[0_20px_40px_rgba(0,0,0,0.15)] transition-all duration-300 hover:-translate-y-2 hover:scale-[1.02] hover:shadow-[0_25px_50px_rgba(0,0,0,0.25)] sm:w-auto w-full"
+            className="group relative flex w-full items-center justify-center gap-3 rounded-xl bg-background px-8 py-4 text-foreground shadow-[0_20px_40px_rgba(0,0,0,0.15)] transition-all duration-300 hover:-translate-y-2 hover:scale-[1.02] hover:shadow-[0_25px_50px_rgba(0,0,0,0.25)] sm:w-auto"
           >
             <Globe className="h-5 w-5 transition-transform duration-300 group-hover:rotate-12" />
             <span className="text-lg font-medium">Visite nosso site</span>
             <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
           </button>
 
-          {/* Botão WhatsApp */}
           <button
             onClick={handleWhatsAppClick}
-            className="group relative flex items-center justify-center gap-3 rounded-xl bg-[#25D366] px-8 py-4 text-white shadow-[0_20px_40px_rgba(37,211,102,0.3)] transition-all duration-300 hover:-translate-y-2 hover:scale-[1.02] hover:shadow-[0_25px_50px_rgba(37,211,102,0.4)] sm:w-auto w-full"
+            className="group relative flex w-full items-center justify-center gap-3 rounded-xl bg-[#25D366] px-8 py-4 text-white shadow-[0_20px_40px_rgba(37,211,102,0.3)] transition-all duration-300 hover:-translate-y-2 hover:scale-[1.02] hover:shadow-[0_25px_50px_rgba(37,211,102,0.4)] sm:w-auto"
           >
             <Phone className="h-5 w-5 transition-transform duration-300 group-hover:rotate-12" />
             <span className="text-lg font-medium">Chamar no WhatsApp</span>
             <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
           </button>
-        </div>
 
-        {/* Informação Adicional */}
-        <div className="mt-16 animate-fade-lift" style={{ animationDelay: "300ms" }}>
-          <p className="text-sm text-background/60">
-            Estamos disponíveis para tirar suas dúvidas e agendar uma reunião.
-          </p>
-        </div>
-      </div>
-
-      <footer className="relative z-10 mt-16 border-t border-background/10 px-6 pb-10 pt-10 lg:px-12">
-        <nav
-          className="mx-auto flex max-w-4xl flex-col gap-6 sm:flex-row sm:flex-wrap sm:justify-center"
-          aria-label="Instagram Bevilacqua"
-        >
           <a
             href={instagramInterioresUrl}
             target="_blank"
@@ -108,7 +95,14 @@ export function CallToAction() {
             <div className="pointer-events-none absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
           </a>
         </nav>
-      </footer>
+
+        {/* Informação Adicional */}
+        <div className="mt-16 animate-fade-lift" style={{ animationDelay: "300ms" }}>
+          <p className="text-sm text-background/60">
+            Estamos disponíveis para tirar suas dúvidas e agendar uma reunião.
+          </p>
+        </div>
+      </div>
     </section>
   );
 }
