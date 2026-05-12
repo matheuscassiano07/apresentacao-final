@@ -10,7 +10,7 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: 'Proposta Comercial | Bevilacqua Arquitetura e Engenharia',
+  title: 'Apresentação Bevilacqua',
   description: 'Proposta comercial exclusiva para projeto residencial - Bevilacqua Arquitetura e Engenharia - 49 anos de experiência',
   icons: {
     icon: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/logo.png-9mRrvj28aRZ67rPbc0QVFN9MRd8ZjD.webp',
