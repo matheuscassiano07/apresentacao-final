@@ -5,6 +5,11 @@
   "framework": "nextjs",
   "cleanUrls": true,
   "trailingSlash": true,
+  "functions": {
+    "app/api/contrato/**/route.ts": {
+      "maxDuration": 120
+    }
+  },
   "rewrites": [
     {
       "source": "/(.*)",
