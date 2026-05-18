@@ -14,3 +14,9 @@ Rotas no Next.js (mesmo deploy Vercel):
 | `/api/contrato/gerar-pdf` | GET — baixar PDF por query string |
 
 A compilação usa [Tectonic](https://tectonic-typesetting.github.io/), baixado automaticamente na primeira geração.
+
+## Produção (Vercel)
+
+- Painel: https://bevilacqua.vercel.app/admin
+- Cadastro / PDF: https://bevilacqua.vercel.app/cadastro-minuta
+- Apresentação: https://bevilacqua.vercel.app/apresentacao
