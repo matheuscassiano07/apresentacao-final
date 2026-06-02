@@ -63,7 +63,8 @@ async function extractArchive(archivePath: string, destDir: string, archiveType:
     zip.extractAllTo(destDir, true);
     return;
   }
-  await execFileAsync("tar", ["-xzf", archivePath, "-C", destDir]);
+  const { extract } = await import("tar");
+  await extract({ file: archivePath, cwd: destDir });
 }
 
 export async function obterTectonic(): Promise<string> {
