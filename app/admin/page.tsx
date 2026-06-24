@@ -31,6 +31,12 @@ export default function AdminPage() {
 
         <div className="mt-6 grid gap-3 sm:grid-cols-2">
           <Card
+            title="Gerar Proposta"
+            description="Monte a apresentação com imagens personalizadas e gere o link para o cliente."
+            href="/gerar-proposta"
+            label="Ir para Gerar Proposta"
+          />
+          <Card
             title="Gerar Minuta"
             description="Cadastro do cliente e geração do contrato em PDF (LaTeX)."
             href="/cadastro-minuta"

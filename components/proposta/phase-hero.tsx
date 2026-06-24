@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { PropostaImage } from "@/components/proposta/proposta-image";
 
 interface PhaseHeroProps {
   nomeCliente: string;
@@ -13,7 +13,7 @@ export function PhaseHero({ backgroundImage }: PhaseHeroProps) {
     <section id="intro" className="section-gradient relative h-screen w-full overflow-hidden bg-foreground">
       {backgroundImage && (
         <div className="absolute inset-0">
-          <Image
+          <PropostaImage
             src={backgroundImage}
             alt="Imagem de capa da proposta"
             fill
