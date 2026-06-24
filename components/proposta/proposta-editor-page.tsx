@@ -8,22 +8,15 @@ import { InvestmentSection } from "@/components/proposta/investment-section";
 import { TermsSection } from "@/components/proposta/terms-section";
 import { FooterCTA } from "@/components/proposta/footer-cta";
 
-interface PhaseItem {
-  title: string;
-  description: string;
-}
-
 interface PhaseData {
   id: string;
   number: string;
   title: string;
   subtitle: string;
   description: string;
-  items: PhaseItem[];
   image: string;
   images?: string[];
   variant: "light" | "dark";
-  note?: string;
 }
 
 interface PropostaData {
@@ -92,11 +85,9 @@ export function PropostaEditorPage({
             title={phase.title}
             subtitle={phase.subtitle}
             description={phase.description}
-            items={phase.items}
             image={phase.image}
             images={phase.images}
             variant={phase.variant}
-            note={phase.note}
             sectionIndex={index}
           />
         </div>
@@ -109,7 +100,13 @@ export function PropostaEditorPage({
             valorM2={propostaData.valorM2}
             metragem={propostaData.metragem}
           />
-          <TermsSection cidade={propostaData.cidade} condominio={propostaData.condominio} />
+          <TermsSection
+            cidade={propostaData.cidade}
+            condominio={propostaData.condominio}
+            metragem={propostaData.metragem}
+            valorM2={propostaData.valorM2}
+            valorTotal={propostaData.valorTotal}
+          />
           <FooterCTA
             dataDia={propostaData.dataDia}
             dataMes={propostaData.dataMes}

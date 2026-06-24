@@ -3,7 +3,11 @@
 import Link from "next/link";
 import { ChangeEvent, FormEvent, useMemo, useState } from "react";
 import { buildPropostaPhases } from "@/lib/proposta-phases";
-import { imageFieldsFromDefaults } from "@/lib/proposta-images";
+import {
+  DEFAULT_PROPOSTA_IMAGES,
+  defaultPhaseImageLists,
+  serializePhaseImages,
+} from "@/lib/proposta-images";
 
 type ClientFields = {
   nome_cliente: string;
@@ -21,7 +25,10 @@ type ClientFields = {
   data_ano: string;
 };
 
-type ImageFields = Record<string, string>;
+type ImageFields = {
+  hero: string;
+  phases: Record<string, string[]>;
+};
 
 const defaultClient: ClientFields = {
   nome_cliente: "",
@@ -96,7 +103,10 @@ async function fileToDataUrl(file: File): Promise<string> {
 
 export function GerarPropostaForm() {
   const [client, setClient] = useState<ClientFields>(defaultClient);
-  const [images, setImages] = useState<ImageFields>(imageFieldsFromDefaults);
+  const [images, setImages] = useState<ImageFields>({
+    hero: DEFAULT_PROPOSTA_IMAGES.hero,
+    phases: defaultPhaseImageLists(),
+  });
   const [status, setStatus] = useState("");
   const [link, setLink] = useState("");
   const [destino, setDestino] = useState<"proposta" | "apresentacao">("proposta");
@@ -110,21 +120,61 @@ export function GerarPropostaForm() {
     setClient((prev) => ({ ...prev, [key]: value }));
   }
 
-  function updateImage(key: string, value: string) {
-    setImages((prev) => ({ ...prev, [key]: value }));
+  function updateHeroImage(value: string) {
+    setImages((prev) => ({ ...prev, hero: value }));
   }
 
-  async function onFileSelect(key: string, event: ChangeEvent<HTMLInputElement>) {
+  function updatePhaseImage(phaseKey: string, index: number, value: string) {
+    setImages((prev) => {
+      const current = [...(prev.phases[phaseKey] ?? [""])];
+      current[index] = value;
+      return {
+        ...prev,
+        phases: { ...prev.phases, [phaseKey]: current },
+      };
+    });
+  }
+
+  function addPhaseImage(phaseKey: string) {
+    setImages((prev) => ({
+      ...prev,
+      phases: {
+        ...prev.phases,
+        [phaseKey]: [...(prev.phases[phaseKey] ?? [""]), ""],
+      },
+    }));
+  }
+
+  function removePhaseImage(phaseKey: string, index: number) {
+    setImages((prev) => {
+      const current = [...(prev.phases[phaseKey] ?? [""])];
+      if (current.length <= 1) return prev;
+      current.splice(index, 1);
+      return {
+        ...prev,
+        phases: { ...prev.phases, [phaseKey]: current },
+      };
+    });
+  }
+
+  async function onHeroFileSelect(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      setStatus("Selecione um arquivo de imagem.");
-      return;
+    try {
+      updateHeroImage(await fileToDataUrl(file));
+      setStatus("Capa atualizada.");
+    } catch {
+      setStatus("Erro ao carregar a capa.");
     }
+  }
+
+  async function onPhaseFileSelect(phaseKey: string, index: number, event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
     try {
       const dataUrl = await fileToDataUrl(file);
-      updateImage(key, dataUrl);
-      setStatus(`Imagem carregada para ${key}.`);
+      updatePhaseImage(phaseKey, index, dataUrl);
+      setStatus(`Imagem ${index + 1} da etapa ${phaseKey} carregada.`);
     } catch {
       setStatus("Erro ao carregar a imagem.");
     }
@@ -138,11 +188,11 @@ export function GerarPropostaForm() {
     if (client.cidade_obra.trim()) {
       params.set("cidade", client.cidade_obra.trim());
     }
-    Object.entries(images).forEach(([key, value]) => {
-      const trimmed = value.trim();
-      if (!trimmed) return;
-      const defaultValue = imageFieldsFromDefaults()[key as keyof ReturnType<typeof imageFieldsFromDefaults>];
-      if (trimmed !== defaultValue) params.set(key, trimmed);
+    if (images.hero.trim() && images.hero !== DEFAULT_PROPOSTA_IMAGES.hero) {
+      params.set("img_hero", images.hero.trim());
+    }
+    Object.entries(serializePhaseImages(images.phases)).forEach(([key, value]) => {
+      params.set(key, value);
     });
 
     const base = destino === "proposta" ? "/apresentacao/proposta" : "/apresentacao";
@@ -328,33 +378,31 @@ export function GerarPropostaForm() {
         <section>
           <h2 className="text-base font-semibold text-[#333]">Imagens</h2>
           <p className="mt-2 text-sm text-[#666]">
-            Cole uma URL, use caminho do site (ex: /images/phase-01.jpg) ou envie um arquivo do computador.
+            Cada etapa aceita uma ou mais fotos horizontais. Mínimo de 1 foto por etapa.
           </p>
 
           <div className="mt-4 space-y-4">
             <ImageField
               label="Capa (hero)"
-              value={images.img_hero}
-              onChange={(value) => updateImage("img_hero", value)}
-              onFileSelect={(event) => void onFileSelect("img_hero", event)}
+              value={images.hero}
+              onChange={updateHeroImage}
+              onFileSelect={(event) => void onHeroFileSelect(event)}
             />
 
             {phaseLabels.map((phase) => (
-              <ImageField
+              <PhaseImagesField
                 key={phase.key}
                 label={phase.label}
-                value={images[phase.key] ?? ""}
-                onChange={(value) => updateImage(phase.key, value)}
-                onFileSelect={(event) => void onFileSelect(phase.key, event)}
+                phaseKey={phase.key.replace("img_", "")}
+                values={images.phases[phase.key.replace("img_", "")] ?? [""]}
+                onChange={(index, value) => updatePhaseImage(phase.key.replace("img_", ""), index, value)}
+                onAdd={() => addPhaseImage(phase.key.replace("img_", ""))}
+                onRemove={(index) => removePhaseImage(phase.key.replace("img_", ""), index)}
+                onFileSelect={(index, event) =>
+                  void onPhaseFileSelect(phase.key.replace("img_", ""), index, event)
+                }
               />
             ))}
-
-            <ImageField
-              label="Etapa 10 — imagem extra (Integração)"
-              value={images.img_10_2}
-              onChange={(value) => updateImage("img_10_2", value)}
-              onFileSelect={(event) => void onFileSelect("img_10_2", event)}
-            />
           </div>
         </section>
 
@@ -427,7 +475,7 @@ function ImageField({
           className={inputClass}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          placeholder="/images/phase-01.jpg ou https://..."
+          placeholder="/images/hero-bg.jpg ou https://..."
         />
         <label className={`${btnSecondary} cursor-pointer text-center`}>
           Enviar arquivo
@@ -435,8 +483,79 @@ function ImageField({
         </label>
       </div>
       {value ? (
-        <img src={value} alt={label} className="mt-3 h-24 w-full rounded-md object-cover" />
+        <img src={value} alt={label} className="mt-3 aspect-[16/9] w-full rounded-md object-cover" />
       ) : null}
+    </div>
+  );
+}
+
+function PhaseImagesField({
+  label,
+  phaseKey,
+  values,
+  onChange,
+  onAdd,
+  onRemove,
+  onFileSelect,
+}: {
+  label: string;
+  phaseKey: string;
+  values: string[];
+  onChange: (index: number, value: string) => void;
+  onAdd: () => void;
+  onRemove: (index: number) => void;
+  onFileSelect: (index: number, event: ChangeEvent<HTMLInputElement>) => void;
+}) {
+  return (
+    <div className="rounded-lg border border-[#ececec] p-3">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm font-medium text-[#333]">{label}</p>
+        <button type="button" className="text-xs font-semibold text-[#911419]" onClick={onAdd}>
+          + Adicionar foto
+        </button>
+      </div>
+      <div className="mt-3 space-y-3">
+        {values.map((value, index) => (
+          <div key={`${phaseKey}-${index}`} className="rounded-md border border-[#f0f0f0] p-3">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-xs font-medium text-[#666]">Foto {index + 1}</span>
+              {values.length > 1 ? (
+                <button
+                  type="button"
+                  className="text-xs text-[#999] hover:text-[#911419]"
+                  onClick={() => onRemove(index)}
+                >
+                  Remover
+                </button>
+              ) : null}
+            </div>
+            <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
+              <input
+                className={inputClass}
+                value={value}
+                onChange={(e) => onChange(index, e.target.value)}
+                placeholder="/images/phase-01.jpg ou https://..."
+              />
+              <label className={`${btnSecondary} cursor-pointer text-center`}>
+                Enviar arquivo
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(event) => onFileSelect(index, event)}
+                />
+              </label>
+            </div>
+            {value ? (
+              <img
+                src={value}
+                alt={`${label} ${index + 1}`}
+                className="mt-3 aspect-[16/9] w-full rounded-md object-cover"
+              />
+            ) : null}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

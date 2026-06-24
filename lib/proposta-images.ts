@@ -4,8 +4,7 @@ type QueryValue = string | string[] | undefined;
 
 export interface PropostaImageOverrides {
   hero?: string;
-  phases: Record<string, string>;
-  phaseExtras: Record<string, string[]>;
+  phaseImages: Record<string, string[]>;
 }
 
 export const DEFAULT_PROPOSTA_IMAGES = {
@@ -24,7 +23,6 @@ export const DEFAULT_PROPOSTA_IMAGES = {
     "11": "/images/phase-11.jpg",
     "12": "/images/phase-12.jpg",
   },
-  phase10Extra: "/images/phase-13.jpg",
 } as const;
 
 function getFirstValue(value: QueryValue): string {
@@ -32,28 +30,42 @@ function getFirstValue(value: QueryValue): string {
   return value ?? "";
 }
 
+function parseImageList(raw: string): string[] {
+  return raw
+    .split("|")
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
+function parsePhaseImages(searchParams: Record<string, QueryValue>, phaseKey: string): string[] {
+  const images: string[] = [];
+  const main = getFirstValue(searchParams[`img_${phaseKey}`]).trim();
+  if (main) images.push(...parseImageList(main));
+
+  for (let index = 2; index <= 12; index += 1) {
+    const legacy = getFirstValue(searchParams[`img_${phaseKey}_${index}`]).trim();
+    if (legacy) images.push(legacy);
+  }
+
+  return images;
+}
+
 export function parseImageOverrides(
   searchParams: Record<string, QueryValue>,
 ): PropostaImageOverrides {
-  const phases: Record<string, string> = {};
-  const phaseExtras: Record<string, string[]> = {};
+  const phaseImages: Record<string, string[]> = {};
 
   for (let i = 1; i <= 12; i += 1) {
     const key = String(i).padStart(2, "0");
-    const value = getFirstValue(searchParams[`img_${key}`]).trim();
-    if (value) phases[key] = value;
+    const list = parsePhaseImages(searchParams, key);
+    if (list.length > 0) phaseImages[key] = list;
   }
 
   const hero = getFirstValue(searchParams.img_hero).trim();
-  const phase10Extra = getFirstValue(searchParams.img_10_2).trim();
-  if (phase10Extra) {
-    phaseExtras["10"] = [phase10Extra];
-  }
 
   return {
     hero: hero || undefined,
-    phases,
-    phaseExtras,
+    phaseImages,
   };
 }
 
@@ -62,21 +74,13 @@ export function applyImageOverrides(
   overrides: PropostaImageOverrides,
 ) {
   return phases.map((phase) => {
-    const key = phase.number;
-    const customImage = overrides.phases[key];
-    const extras = overrides.phaseExtras[key];
-
-    const image = customImage || phase.image;
-    const images = extras?.length
-      ? [image, ...extras]
-      : customImage
-        ? [customImage, ...(phase.images?.slice(1) ?? [])]
-        : phase.images;
+    const customImages = overrides.phaseImages[phase.number];
+    if (!customImages?.length) return phase;
 
     return {
       ...phase,
-      image,
-      images,
+      image: customImages[0],
+      images: customImages,
     };
   });
 }
@@ -85,12 +89,17 @@ export function resolveHeroImage(overrides: PropostaImageOverrides): string {
   return overrides.hero || DEFAULT_PROPOSTA_IMAGES.hero;
 }
 
-export function imageFieldsFromDefaults() {
-  return {
-    img_hero: DEFAULT_PROPOSTA_IMAGES.hero,
-    ...Object.fromEntries(
-      Object.entries(DEFAULT_PROPOSTA_IMAGES.phases).map(([key, value]) => [`img_${key}`, value]),
-    ),
-    img_10_2: DEFAULT_PROPOSTA_IMAGES.phase10Extra,
-  };
+export function defaultPhaseImageLists(): Record<string, string[]> {
+  return Object.fromEntries(
+    Object.entries(DEFAULT_PROPOSTA_IMAGES.phases).map(([key, value]) => [key, [value]]),
+  );
+}
+
+export function serializePhaseImages(phaseImages: Record<string, string[]>): Record<string, string> {
+  const serialized: Record<string, string> = {};
+  Object.entries(phaseImages).forEach(([key, urls]) => {
+    const filtered = urls.map((url) => url.trim()).filter(Boolean);
+    if (filtered.length > 0) serialized[`img_${key}`] = filtered.join("|");
+  });
+  return serialized;
 }
