@@ -1,6 +1,7 @@
 "use client";
 
 import { PhaseHero } from "@/components/proposta/phase-hero";
+import { EscopoSection } from "@/components/proposta/escopo-section";
 import { PhaseSection } from "@/components/proposta/phase-section";
 import { CallToAction } from "@/components/proposta/call-to-action";
 import { InvestmentSection } from "@/components/proposta/investment-section";
@@ -30,6 +31,12 @@ interface PropostaData {
   cpf: string;
   condominio: string;
   cidade: string;
+  cidadeCliente: string;
+  cidadeObra: string;
+  telefone: string;
+  objetoProposta: string;
+  areaPretendida: string;
+  areaTerreno: string;
   metragem: string;
   valorM2: string;
   valorTotal: string;
@@ -61,7 +68,21 @@ export function PropostaEditorPage({
         nomeCliente={propostaData.nomeCliente}
         dataValidade={propostaData.dataValidade}
         backgroundImage={heroImage}
+        headline={variant === "proposta" ? "Proposta" : "Apresentação"}
       />
+
+      {variant === "proposta" ? (
+        <EscopoSection
+          nomeCliente={propostaData.nomeCliente}
+          cidadeCliente={propostaData.cidadeCliente}
+          telefone={propostaData.telefone}
+          condominio={propostaData.condominio}
+          cidadeObra={propostaData.cidadeObra}
+          objetoProposta={propostaData.objetoProposta}
+          areaPretendida={propostaData.areaPretendida}
+          areaTerreno={propostaData.areaTerreno}
+        />
+      ) : null}
 
       {phases.map((phase, index) => (
         <div key={phase.id}>

@@ -7,11 +7,15 @@ import { imageFieldsFromDefaults } from "@/lib/proposta-images";
 
 type ClientFields = {
   nome_cliente: string;
+  telefone: string;
+  cidade_cliente: string;
   cpf: string;
-  metragem: string;
-  valor_m2: string;
-  cidade: string;
   condominio: string;
+  cidade_obra: string;
+  objeto_proposta: string;
+  metragem: string;
+  area_terreno: string;
+  valor_m2: string;
   data_dia: string;
   data_mes: string;
   data_ano: string;
@@ -21,11 +25,15 @@ type ImageFields = Record<string, string>;
 
 const defaultClient: ClientFields = {
   nome_cliente: "",
+  telefone: "",
+  cidade_cliente: "São José dos Campos - SP",
   cpf: "",
-  metragem: "200",
-  valor_m2: "80,00",
-  cidade: "São José dos Campos",
   condominio: "",
+  cidade_obra: "São José dos Campos - SP",
+  objeto_proposta: "",
+  metragem: "",
+  area_terreno: "",
+  valor_m2: "80,00",
   data_dia: String(new Date().getDate()),
   data_mes: new Date().toLocaleDateString("pt-BR", { month: "long" }),
   data_ano: String(new Date().getFullYear()),
@@ -38,6 +46,32 @@ const phaseLabels = buildPropostaPhases().map((phase) => ({
 
 function onlyDigits(value: string) {
   return String(value || "").replace(/\D/g, "");
+}
+
+function applyPhoneMask(value: string) {
+  const digits = onlyDigits(value).slice(0, 11);
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  if (digits.length <= 10) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+  }
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+}
+
+function applyDecimalMask(value: string) {
+  let text = String(value || "");
+  text = text.replace(/[^\d,.\s]/g, "");
+  text = text.replace(/\./g, ",");
+  text = text.replace(/\s+/g, "");
+  const firstComma = text.indexOf(",");
+  if (firstComma >= 0) {
+    const intPart = text.slice(0, firstComma).replace(/,/g, "");
+    const decPart = text.slice(firstComma + 1).replace(/,/g, "");
+    text = `${intPart},${decPart}`;
+  } else {
+    text = text.replace(/,/g, "");
+  }
+  return text;
 }
 
 function applyCpfMask(value: string) {
@@ -101,6 +135,9 @@ export function GerarPropostaForm() {
     Object.entries(client).forEach(([key, value]) => {
       if (value.trim()) params.set(key, value.trim());
     });
+    if (client.cidade_obra.trim()) {
+      params.set("cidade", client.cidade_obra.trim());
+    }
     Object.entries(images).forEach(([key, value]) => {
       const trimmed = value.trim();
       if (!trimmed) return;
@@ -172,13 +209,31 @@ export function GerarPropostaForm() {
         </section>
 
         <section>
-          <h2 className="text-base font-semibold text-[#333]">Dados do cliente</h2>
+          <h2 className="text-base font-semibold text-[#333]">Dados do cliente e escopo</h2>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             <Field label="Nome do cliente">
               <input
                 className={inputClass}
                 value={client.nome_cliente}
                 onChange={(e) => updateClient("nome_cliente", e.target.value)}
+                required
+              />
+            </Field>
+            <Field label="Telefone">
+              <input
+                className={inputClass}
+                value={client.telefone}
+                onChange={(e) => updateClient("telefone", applyPhoneMask(e.target.value))}
+                placeholder="(12) 98144-8456"
+                required
+              />
+            </Field>
+            <Field label="Cidade do cliente">
+              <input
+                className={inputClass}
+                value={client.cidade_cliente}
+                onChange={(e) => updateClient("cidade_cliente", e.target.value)}
+                placeholder="São José dos Campos - SP"
                 required
               />
             </Field>
@@ -190,11 +245,48 @@ export function GerarPropostaForm() {
                 required
               />
             </Field>
-            <Field label="Metragem (m²)">
+            <Field label="Condomínio / Empreendimento (obra)">
+              <input
+                className={inputClass}
+                value={client.condominio}
+                onChange={(e) => updateClient("condominio", e.target.value)}
+                placeholder="Condomínio Quinta das Flores"
+                required
+              />
+            </Field>
+            <Field label="Cidade da obra">
+              <input
+                className={inputClass}
+                value={client.cidade_obra}
+                onChange={(e) => updateClient("cidade_obra", e.target.value)}
+                placeholder="São José dos Campos - SP"
+                required
+              />
+            </Field>
+            <Field label="Objeto da proposta" className="sm:col-span-2">
+              <input
+                className={inputClass}
+                value={client.objeto_proposta}
+                onChange={(e) => updateClient("objeto_proposta", e.target.value)}
+                placeholder="Projeto de Arquitetura e Interiores para uma Clínica Médica"
+                required
+              />
+            </Field>
+            <Field label="Área pretendida (m²)">
               <input
                 className={inputClass}
                 value={client.metragem}
-                onChange={(e) => updateClient("metragem", e.target.value)}
+                onChange={(e) => updateClient("metragem", applyDecimalMask(e.target.value))}
+                placeholder="400,00"
+                required
+              />
+            </Field>
+            <Field label="Área do terreno (m²)">
+              <input
+                className={inputClass}
+                value={client.area_terreno}
+                onChange={(e) => updateClient("area_terreno", applyDecimalMask(e.target.value))}
+                placeholder="2.000,00"
                 required
               />
             </Field>
@@ -202,23 +294,7 @@ export function GerarPropostaForm() {
               <input
                 className={inputClass}
                 value={client.valor_m2}
-                onChange={(e) => updateClient("valor_m2", e.target.value)}
-                required
-              />
-            </Field>
-            <Field label="Cidade">
-              <input
-                className={inputClass}
-                value={client.cidade}
-                onChange={(e) => updateClient("cidade", e.target.value)}
-                required
-              />
-            </Field>
-            <Field label="Condomínio / Empreendimento">
-              <input
-                className={inputClass}
-                value={client.condominio}
-                onChange={(e) => updateClient("condominio", e.target.value)}
+                onChange={(e) => updateClient("valor_m2", applyDecimalMask(e.target.value))}
                 required
               />
             </Field>
@@ -315,9 +391,17 @@ export function GerarPropostaForm() {
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  children,
+  className,
+}: {
+  label: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <label className="block text-sm text-[#444]">
+    <label className={className ? `block text-sm text-[#444] ${className}` : "block text-sm text-[#444]"}>
       <span className="mb-1 block font-medium">{label}</span>
       {children}
     </label>

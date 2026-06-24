@@ -5,6 +5,12 @@ export interface PropostaData {
   cpf: string;
   condominio: string;
   cidade: string;
+  cidadeCliente: string;
+  cidadeObra: string;
+  telefone: string;
+  objetoProposta: string;
+  areaPretendida: string;
+  areaTerreno: string;
   metragem: string;
   valorM2: string;
   valorTotal: string;
@@ -46,13 +52,30 @@ function formatarMoedaBr(value: number): string {
   });
 }
 
+function formatarArea(value: string, fallback = "0"): string {
+  const numero = parseNumeroBr(value, Number.parseFloat(fallback.replace(",", ".")) || 0);
+  return `${numero.toLocaleString("pt-BR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}m²`;
+}
+
 export function buildPropostaData(searchParams: Record<string, QueryValue>): PropostaData {
-  const nomeCliente = getFirstValue(searchParams.nome_cliente) || "Cliente";
+  const nomeCliente = getFirstValue(searchParams.nome_cliente).trim() || "Cliente";
   const cpf = getFirstValue(searchParams.cpf) || "___";
-  const condominio = getFirstValue(searchParams.condominio) || "Condomínio";
-  const cidade = getFirstValue(searchParams.cidade) || "São José dos Campos";
+  const condominio = getFirstValue(searchParams.condominio).trim() || "Condomínio";
+  const cidadeObra = getFirstValue(searchParams.cidade_obra).trim();
+  const cidadeLegacy = getFirstValue(searchParams.cidade).trim();
+  const cidade = cidadeObra || cidadeLegacy || "São José dos Campos";
+  const cidadeCliente =
+    getFirstValue(searchParams.cidade_cliente).trim() || cidadeLegacy || cidade;
+  const telefone = getFirstValue(searchParams.telefone).trim() || "—";
+  const objetoProposta =
+    getFirstValue(searchParams.objeto_proposta).trim() ||
+    "Projeto de Arquitetura e Interiores";
 
   const metragemInput = getFirstValue(searchParams.metragem) || "200";
+  const areaTerrenoInput = getFirstValue(searchParams.area_terreno) || metragemInput;
   const valorM2Input = getFirstValue(searchParams.valor_m2) || "80,00";
 
   const metragemNumero = parseNumeroBr(metragemInput, 200);
@@ -86,6 +109,12 @@ export function buildPropostaData(searchParams: Record<string, QueryValue>): Pro
     cpf,
     condominio,
     cidade,
+    cidadeCliente,
+    cidadeObra,
+    telefone,
+    objetoProposta,
+    areaPretendida: formatarArea(metragemInput),
+    areaTerreno: formatarArea(areaTerrenoInput),
     metragem: `${metragemFormatada}m²`,
     valorM2,
     valorTotal: formatarMoedaBr(valorTotalNumero),
