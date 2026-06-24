@@ -4,7 +4,8 @@ import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import { gerarIdCurto } from "@/lib/proposta-slug";
 import {
-  ERRO_BLOB_NAO_CONFIGURADO,
+  blobPutOptions,
+  getBlobToken,
   mensagemErroArmazenamento,
   podeUsarDiscoLocal,
 } from "@/lib/proposta-storage-env";
@@ -29,11 +30,7 @@ async function salvarLocal(file: File, nomeArquivo: string): Promise<string> {
 }
 
 async function salvarBlob(file: File, nomeArquivo: string): Promise<string> {
-  const blob = await put(`propostas/images/${nomeArquivo}`, file, {
-    access: "public",
-    addRandomSuffix: false,
-    allowOverwrite: true,
-  });
+  const blob = await put(`propostas/images/${nomeArquivo}`, file, blobPutOptions());
   return blob.url;
 }
 
@@ -71,4 +68,4 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export { ERRO_BLOB_NAO_CONFIGURADO };
+export { ERRO_BLOB_NAO_CONFIGURADO } from "@/lib/proposta-storage-env";

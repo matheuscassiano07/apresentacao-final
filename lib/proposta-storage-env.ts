@@ -6,22 +6,56 @@ export function podeUsarDiscoLocal(): boolean {
   return !isVercelRuntime();
 }
 
+export function getBlobToken(): string | undefined {
+  return (
+    process.env.BLOB_READ_WRITE_TOKEN?.trim() ||
+    process.env.VERCEL_BLOB_READ_WRITE_TOKEN?.trim() ||
+    undefined
+  );
+}
+
+export function getBlobAccess(): "public" | "private" {
+  const raw = process.env.BLOB_ACCESS?.trim().toLowerCase();
+  return raw === "private" ? "private" : "public";
+}
+
 export const ERRO_BLOB_NAO_CONFIGURADO =
-  "Armazenamento não configurado na Vercel. Abra o projeto bevilacqua → Storage → Create Blob Store → conecte ao projeto e faça redeploy.";
+  "Blob não disponível neste deploy. Confirme: Storage → Blob conectado ao projeto bevilacqua, ambiente Production marcado, e Redeploy após conectar.";
 
 export function mensagemErroArmazenamento(error: unknown): string {
-  if (error instanceof Error) {
-    const msg = error.message.toLowerCase();
-    if (
-      msg.includes("blob") ||
-      msg.includes("token") ||
-      msg.includes("unauthorized") ||
-      msg.includes("forbidden") ||
-      msg.includes("enoent")
-    ) {
-      return ERRO_BLOB_NAO_CONFIGURADO;
-    }
-    return error.message;
+  const original = error instanceof Error ? error.message : String(error);
+  const lower = original.toLowerCase();
+  const token = getBlobToken();
+
+  if (lower.includes("access") && lower.includes("public")) {
+    return `O Blob foi criado como Private, mas o app espera Public. Crie um Blob store com acesso Public, ou defina BLOB_ACCESS=private nas variáveis do projeto. Detalhe: ${original}`;
   }
-  return ERRO_BLOB_NAO_CONFIGURADO;
+
+  if (!token && isVercelRuntime()) {
+    return `${ERRO_BLOB_NAO_CONFIGURADO} Detalhe técnico: ${original}`;
+  }
+
+  if (
+    lower.includes("blob") ||
+    lower.includes("token") ||
+    lower.includes("unauthorized") ||
+    lower.includes("forbidden")
+  ) {
+    return token
+      ? `Erro no Vercel Blob: ${original}`
+      : ERRO_BLOB_NAO_CONFIGURADO;
+  }
+
+  return original || ERRO_BLOB_NAO_CONFIGURADO;
+}
+
+export function blobPutOptions(extra: Record<string, unknown> = {}) {
+  const token = getBlobToken();
+  return {
+    access: getBlobAccess(),
+    addRandomSuffix: false,
+    allowOverwrite: true,
+    ...(token ? { token } : {}),
+    ...extra,
+  };
 }
