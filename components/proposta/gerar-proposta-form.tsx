@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { upload } from "@vercel/blob/client";
 import { ChangeEvent, FormEvent, useMemo, useState } from "react";
 import { buildPropostaPhases } from "@/lib/proposta-phases";
 import { DEFAULT_PROPOSTA_IMAGES, defaultPhaseImageLists } from "@/lib/proposta-images";
@@ -106,17 +107,39 @@ function applyCpfMask(value: string) {
   return formatted;
 }
 
-async function uploadImagem(file: File): Promise<string> {
+async function lerErroApi(response: Response): Promise<string> {
+  const texto = await response.text();
+  try {
+    const data = JSON.parse(texto) as { erro?: string };
+    if (data.erro) return data.erro;
+  } catch {
+    // resposta não é JSON
+  }
+  return texto || `Erro ${response.status}`;
+}
+
+async function uploadImagemServidor(file: File): Promise<string> {
   const body = new FormData();
   body.append("file", file);
   const response = await fetch("/api/propostas/upload", { method: "POST", body });
   if (!response.ok) {
-    const erro = await response.text();
-    throw new Error(erro || "Falha no upload da imagem.");
+    throw new Error(await lerErroApi(response));
   }
   const data = (await response.json()) as { url?: string; erro?: string };
   if (!data.url) throw new Error(data.erro || "URL da imagem não retornada.");
   return data.url;
+}
+
+async function uploadImagem(file: File): Promise<string> {
+  try {
+    const blob = await upload(file.name, file, {
+      access: "public",
+      handleUploadUrl: "/api/propostas/upload/client",
+    });
+    return blob.url;
+  } catch {
+    return uploadImagemServidor(file);
+  }
 }
 
 export function GerarPropostaForm() {
@@ -235,8 +258,7 @@ export function GerarPropostaForm() {
       });
 
       if (!response.ok) {
-        const erro = await response.text();
-        throw new Error(erro || "Falha ao salvar a proposta.");
+        throw new Error(await lerErroApi(response));
       }
 
       const data = (await response.json()) as { url: string; slug: string };
@@ -279,6 +301,7 @@ export function GerarPropostaForm() {
       <p className="mt-3 text-center text-sm text-[#666]">
         Gera um link curto no formato{" "}
         <strong>/proposta/nome-do-cliente-id</strong> com fotos hospedadas no servidor.
+        Em produção, é necessário ter o <strong>Vercel Blob</strong> conectado ao projeto.
       </p>
 
       <form onSubmit={onSubmit} className="mt-6 space-y-8">

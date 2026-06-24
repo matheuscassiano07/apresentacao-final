@@ -2,6 +2,12 @@ import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 import { put, head } from "@vercel/blob";
 import { montarSlugProposta, gerarIdCurto } from "@/lib/proposta-slug";
+import {
+  ERRO_BLOB_NAO_CONFIGURADO,
+  isVercelRuntime,
+  mensagemErroArmazenamento,
+  podeUsarDiscoLocal,
+} from "@/lib/proposta-storage-env";
 
 export type PropostaDestino = "proposta" | "apresentacao";
 
@@ -61,8 +67,17 @@ async function carregarBlob(slug: string): Promise<PropostaSalva | null> {
   }
 }
 
-function usaBlob(): boolean {
-  return Boolean(process.env.BLOB_READ_WRITE_TOKEN?.trim());
+async function persistirProposta(slug: string, payload: PropostaSalva): Promise<void> {
+  if (podeUsarDiscoLocal()) {
+    await salvarLocal(slug, payload);
+    return;
+  }
+
+  try {
+    await salvarBlob(slug, payload);
+  } catch (error) {
+    throw new Error(mensagemErroArmazenamento(error));
+  }
 }
 
 export async function salvarProposta(input: {
@@ -82,21 +97,21 @@ export async function salvarProposta(input: {
     criadoEm: new Date().toISOString(),
   };
 
-  if (usaBlob()) {
-    await salvarBlob(slug, payload);
-  } else {
-    await salvarLocal(slug, payload);
-  }
-
+  await persistirProposta(slug, payload);
   return payload;
 }
 
 export async function carregarProposta(slug: string): Promise<PropostaSalva | null> {
-  if (usaBlob()) {
+  if (isVercelRuntime() || process.env.BLOB_READ_WRITE_TOKEN?.trim()) {
     const blobData = await carregarBlob(slug);
     if (blobData) return blobData;
   }
-  return carregarLocal(slug);
+
+  if (podeUsarDiscoLocal()) {
+    return carregarLocal(slug);
+  }
+
+  return null;
 }
 
 export function propostaSalvaParaSearchParams(proposta: PropostaSalva): Record<string, string> {
@@ -113,3 +128,5 @@ export function propostaSalvaParaSearchParams(proposta: PropostaSalva): Record<s
   });
   return params;
 }
+
+export { ERRO_BLOB_NAO_CONFIGURADO };

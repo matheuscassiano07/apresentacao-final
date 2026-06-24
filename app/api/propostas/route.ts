@@ -36,6 +36,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Erro ao salvar proposta.";
-    return NextResponse.json({ erro: message }, { status: 500 });
+    const status = message.includes("Armazenamento") ? 503 : 500;
+    return NextResponse.json({ erro: message }, { status });
   }
 }
