@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { upload } from "@vercel/blob/client";
-import { ChangeEvent, FormEvent, useMemo, useState } from "react";
-import { buildPropostaPhases } from "@/lib/proposta-phases";
+import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
+import { buildPhasesForVariant } from "@/lib/proposta-phases";
 import { DEFAULT_PROPOSTA_IMAGES, defaultPhaseImageLists } from "@/lib/proposta-images";
 
 type ClientFields = {
@@ -48,18 +48,13 @@ const defaultClient: ClientFields = {
   data_ano: String(new Date().getFullYear()),
 };
 
-const phaseLabels = buildPropostaPhases().map((phase) => ({
-  phaseKey: phase.number,
-  label: `Etapa ${phase.number} — ${phase.title}`,
-}));
-
 function criarSlot(url = ""): ImageSlot {
   return { id: crypto.randomUUID(), url };
 }
 
-function criarFasesIniciais(): Record<string, ImageSlot[]> {
+function criarFasesIniciais(destino: "proposta" | "apresentacao"): Record<string, ImageSlot[]> {
   return Object.fromEntries(
-    Object.entries(defaultPhaseImageLists()).map(([key, urls]) => [
+    Object.entries(defaultPhaseImageLists(destino)).map(([key, urls]) => [
       key,
       urls.length > 0 ? urls.map((url) => criarSlot(url)) : [criarSlot()],
     ]),
@@ -146,12 +141,28 @@ export function GerarPropostaForm() {
   const [client, setClient] = useState<ClientFields>(defaultClient);
   const [images, setImages] = useState<ImageFields>({
     hero: DEFAULT_PROPOSTA_IMAGES.hero,
-    phases: criarFasesIniciais(),
+    phases: criarFasesIniciais("proposta"),
   });
   const [status, setStatus] = useState("");
   const [link, setLink] = useState("");
   const [destino, setDestino] = useState<"proposta" | "apresentacao">("proposta");
   const [loading, setLoading] = useState(false);
+
+  const phaseLabels = useMemo(
+    () =>
+      buildPhasesForVariant(destino).map((phase) => ({
+        phaseKey: phase.number,
+        label: `Etapa ${phase.number} — ${phase.title}`,
+      })),
+    [destino],
+  );
+
+  useEffect(() => {
+    setImages((prev) => ({
+      ...prev,
+      phases: criarFasesIniciais(destino),
+    }));
+  }, [destino]);
 
   const clientComplete = useMemo(
     () => Object.values(client).every((value) => value.trim().length > 0),

@@ -1,6 +1,6 @@
 import { buildPropostaData } from "@/lib/proposta-data";
 import { applyImageOverrides, parseImageOverrides } from "@/lib/proposta-images";
-import { buildPropostaPhases } from "@/lib/proposta-phases";
+import { buildPhasesForVariant } from "@/lib/proposta-phases";
 import { carregarProposta, propostaSalvaParaSearchParams } from "@/lib/proposta-store";
 import { resolveApresentacaoView } from "@/lib/resolve-apresentacao-view";
 
@@ -39,7 +39,10 @@ export function buildPropostaDataFromPayload(payload: Record<string, string>) {
   return buildPropostaData(payload);
 }
 
-export function buildPhasesFromPayload(payload: Record<string, string>) {
-  const imageOverrides = parseImageOverrides(payload);
-  return applyImageOverrides(buildPropostaPhases(), imageOverrides);
+export function buildPhasesFromPayload(
+  payload: Record<string, string>,
+  variant: "apresentacao" | "proposta" = "proposta",
+) {
+  const imageOverrides = parseImageOverrides(payload, variant);
+  return applyImageOverrides(buildPhasesForVariant(variant), imageOverrides);
 }

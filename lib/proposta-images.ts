@@ -1,4 +1,4 @@
-import { buildPropostaPhases } from "@/lib/proposta-phases";
+import { buildPhasesForVariant, type PropostaPhase } from "@/lib/proposta-phases";
 
 type QueryValue = string | string[] | undefined;
 
@@ -52,10 +52,12 @@ function parsePhaseImages(searchParams: Record<string, QueryValue>, phaseKey: st
 
 export function parseImageOverrides(
   searchParams: Record<string, QueryValue>,
+  variant: "apresentacao" | "proposta" = "apresentacao",
 ): PropostaImageOverrides {
   const phaseImages: Record<string, string[]> = {};
+  const total = buildPhasesForVariant(variant).length;
 
-  for (let i = 1; i <= 12; i += 1) {
+  for (let i = 1; i <= total; i += 1) {
     const key = String(i).padStart(2, "0");
     const list = parsePhaseImages(searchParams, key);
     if (list.length > 0) phaseImages[key] = list;
@@ -70,7 +72,7 @@ export function parseImageOverrides(
 }
 
 export function applyImageOverrides(
-  phases = buildPropostaPhases(),
+  phases: PropostaPhase[],
   overrides: PropostaImageOverrides,
 ) {
   return phases.map((phase) => {
@@ -89,9 +91,11 @@ export function resolveHeroImage(overrides: PropostaImageOverrides): string {
   return overrides.hero || DEFAULT_PROPOSTA_IMAGES.hero;
 }
 
-export function defaultPhaseImageLists(): Record<string, string[]> {
+export function defaultPhaseImageLists(
+  variant: "apresentacao" | "proposta" = "apresentacao",
+): Record<string, string[]> {
   return Object.fromEntries(
-    Object.entries(DEFAULT_PROPOSTA_IMAGES.phases).map(([key, value]) => [key, [value]]),
+    buildPhasesForVariant(variant).map((phase) => [phase.number, [phase.image]]),
   );
 }
 
