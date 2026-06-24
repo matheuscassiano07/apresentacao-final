@@ -1,28 +1,27 @@
 import { PropostaEditorPage } from "@/components/proposta/proposta-editor-page";
-import { buildPropostaData } from "@/lib/proposta-data";
-import { buildPropostaPhases } from "@/lib/proposta-phases";
+import { resolvePropostaPorSlug } from "@/lib/resolve-proposta-salva";
 
-interface SharedPropostaPageProps {
+interface PropostaClientePageProps {
   params: Promise<{ cliente: string }>;
 }
 
-const BACKEND_URL = process.env.BACKEND_URL?.trim().replace(/\/$/, "");
-
-export default async function SharedPropostaPage({ params }: SharedPropostaPageProps) {
-  if (!BACKEND_URL) {
-    return <main className="p-8">Defina BACKEND_URL para abrir links salvos por cliente.</main>;
-  }
-
+export default async function PropostaClientePage({ params }: PropostaClientePageProps) {
   const { cliente } = await params;
-  const response = await fetch(`${BACKEND_URL}/proposta-dados/${encodeURIComponent(cliente)}`, {
-    cache: "no-store",
-  });
-  if (!response.ok) {
-    return <main className="p-8">Link inválido ou expirado.</main>;
+  const resolved = await resolvePropostaPorSlug(cliente, "proposta");
+
+  if (!resolved) {
+    return <main className="p-8">Proposta não encontrada para este link.</main>;
   }
 
-  const payload = await response.json();
-  const propostaData = buildPropostaData(payload);
-  const phases = buildPropostaPhases();
-  return <PropostaEditorPage propostaData={propostaData} phases={phases} isReadonly />;
+  const { view } = resolved;
+
+  return (
+    <PropostaEditorPage
+      propostaData={view.propostaData}
+      phases={view.phases}
+      heroImage={view.heroImage}
+      isReadonly={view.isReadonly}
+      variant="proposta"
+    />
+  );
 }

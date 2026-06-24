@@ -1,29 +1,27 @@
 import { PropostaEditorPage } from "@/components/proposta/proposta-editor-page";
-import { buildPropostaData } from "@/lib/proposta-data";
-import { buildPropostaPhases } from "@/lib/proposta-phases";
+import { resolvePropostaPorSlug } from "@/lib/resolve-proposta-salva";
 
 interface ApresentacaoClientePageProps {
   params: Promise<{ cliente: string }>;
 }
 
-const BACKEND_URL = process.env.BACKEND_URL?.trim().replace(/\/$/, "");
-
 export default async function ApresentacaoClientePage({ params }: ApresentacaoClientePageProps) {
-  if (!BACKEND_URL) {
-    return <main className="p-8">Defina BACKEND_URL para abrir propostas salvas por cliente.</main>;
-  }
-
   const { cliente } = await params;
-  const response = await fetch(`${BACKEND_URL}/proposta-dados/${encodeURIComponent(cliente)}`, {
-    cache: "no-store",
-  });
+  const resolved = await resolvePropostaPorSlug(cliente, "apresentacao");
 
-  if (!response.ok) {
-    return <main className="p-8">Proposta não encontrada para este cliente.</main>;
+  if (!resolved) {
+    return <main className="p-8">Apresentação não encontrada para este link.</main>;
   }
 
-  const payload = await response.json();
-  const propostaData = buildPropostaData(payload);
-  const phases = buildPropostaPhases();
-  return <PropostaEditorPage propostaData={propostaData} phases={phases} />;
+  const { view } = resolved;
+
+  return (
+    <PropostaEditorPage
+      propostaData={view.propostaData}
+      phases={view.phases}
+      heroImage={view.heroImage}
+      isReadonly={view.isReadonly}
+      variant={view.variant}
+    />
+  );
 }

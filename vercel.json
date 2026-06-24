@@ -8,6 +8,9 @@
   "functions": {
     "app/api/contrato/**/route.ts": {
       "maxDuration": 120
+    },
+    "app/api/propostas/**/route.ts": {
+      "maxDuration": 60
     }
   },
   "rewrites": [

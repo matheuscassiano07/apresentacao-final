@@ -3,11 +3,7 @@
 import Link from "next/link";
 import { ChangeEvent, FormEvent, useMemo, useState } from "react";
 import { buildPropostaPhases } from "@/lib/proposta-phases";
-import {
-  DEFAULT_PROPOSTA_IMAGES,
-  defaultPhaseImageLists,
-  serializePhaseImages,
-} from "@/lib/proposta-images";
+import { DEFAULT_PROPOSTA_IMAGES, defaultPhaseImageLists } from "@/lib/proposta-images";
 
 type ClientFields = {
   nome_cliente: string;
@@ -25,9 +21,14 @@ type ClientFields = {
   data_ano: string;
 };
 
+type ImageSlot = {
+  id: string;
+  url: string;
+};
+
 type ImageFields = {
   hero: string;
-  phases: Record<string, string[]>;
+  phases: Record<string, ImageSlot[]>;
 };
 
 const defaultClient: ClientFields = {
@@ -47,9 +48,22 @@ const defaultClient: ClientFields = {
 };
 
 const phaseLabels = buildPropostaPhases().map((phase) => ({
-  key: `img_${phase.number}`,
+  phaseKey: phase.number,
   label: `Etapa ${phase.number} — ${phase.title}`,
 }));
+
+function criarSlot(url = ""): ImageSlot {
+  return { id: crypto.randomUUID(), url };
+}
+
+function criarFasesIniciais(): Record<string, ImageSlot[]> {
+  return Object.fromEntries(
+    Object.entries(defaultPhaseImageLists()).map(([key, urls]) => [
+      key,
+      urls.length > 0 ? urls.map((url) => criarSlot(url)) : [criarSlot()],
+    ]),
+  );
+}
 
 function onlyDigits(value: string) {
   return String(value || "").replace(/\D/g, "");
@@ -92,24 +106,29 @@ function applyCpfMask(value: string) {
   return formatted;
 }
 
-async function fileToDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(new Error("Não foi possível ler o arquivo."));
-    reader.readAsDataURL(file);
-  });
+async function uploadImagem(file: File): Promise<string> {
+  const body = new FormData();
+  body.append("file", file);
+  const response = await fetch("/api/propostas/upload", { method: "POST", body });
+  if (!response.ok) {
+    const erro = await response.text();
+    throw new Error(erro || "Falha no upload da imagem.");
+  }
+  const data = (await response.json()) as { url?: string; erro?: string };
+  if (!data.url) throw new Error(data.erro || "URL da imagem não retornada.");
+  return data.url;
 }
 
 export function GerarPropostaForm() {
   const [client, setClient] = useState<ClientFields>(defaultClient);
   const [images, setImages] = useState<ImageFields>({
     hero: DEFAULT_PROPOSTA_IMAGES.hero,
-    phases: defaultPhaseImageLists(),
+    phases: criarFasesIniciais(),
   });
   const [status, setStatus] = useState("");
   const [link, setLink] = useState("");
   const [destino, setDestino] = useState<"proposta" | "apresentacao">("proposta");
+  const [loading, setLoading] = useState(false);
 
   const clientComplete = useMemo(
     () => Object.values(client).every((value) => value.trim().length > 0),
@@ -124,15 +143,16 @@ export function GerarPropostaForm() {
     setImages((prev) => ({ ...prev, hero: value }));
   }
 
-  function updatePhaseImage(phaseKey: string, index: number, value: string) {
-    setImages((prev) => {
-      const current = [...(prev.phases[phaseKey] ?? [""])];
-      current[index] = value;
-      return {
-        ...prev,
-        phases: { ...prev.phases, [phaseKey]: current },
-      };
-    });
+  function updatePhaseSlot(phaseKey: string, slotId: string, url: string) {
+    setImages((prev) => ({
+      ...prev,
+      phases: {
+        ...prev.phases,
+        [phaseKey]: (prev.phases[phaseKey] ?? [criarSlot()]).map((slot) =>
+          slot.id === slotId ? { ...slot, url } : slot,
+        ),
+      },
+    }));
   }
 
   function addPhaseImage(phaseKey: string) {
@@ -140,75 +160,102 @@ export function GerarPropostaForm() {
       ...prev,
       phases: {
         ...prev.phases,
-        [phaseKey]: [...(prev.phases[phaseKey] ?? [""]), ""],
+        [phaseKey]: [...(prev.phases[phaseKey] ?? [criarSlot()]), criarSlot()],
       },
     }));
   }
 
-  function removePhaseImage(phaseKey: string, index: number) {
+  function removePhaseSlot(phaseKey: string, slotId: string) {
     setImages((prev) => {
-      const current = [...(prev.phases[phaseKey] ?? [""])];
+      const current = prev.phases[phaseKey] ?? [criarSlot()];
       if (current.length <= 1) return prev;
-      current.splice(index, 1);
       return {
         ...prev,
-        phases: { ...prev.phases, [phaseKey]: current },
+        phases: {
+          ...prev.phases,
+          [phaseKey]: current.filter((slot) => slot.id !== slotId),
+        },
       };
     });
   }
 
   async function onHeroFileSelect(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
+    event.target.value = "";
     if (!file) return;
     try {
-      updateHeroImage(await fileToDataUrl(file));
-      setStatus("Capa atualizada.");
-    } catch {
-      setStatus("Erro ao carregar a capa.");
+      setLoading(true);
+      updateHeroImage(await uploadImagem(file));
+      setStatus("Capa enviada com sucesso.");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Erro ao enviar capa.");
+    } finally {
+      setLoading(false);
     }
   }
 
-  async function onPhaseFileSelect(phaseKey: string, index: number, event: ChangeEvent<HTMLInputElement>) {
+  async function onPhaseFileSelect(phaseKey: string, slotId: string, event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
+    event.target.value = "";
     if (!file) return;
     try {
-      const dataUrl = await fileToDataUrl(file);
-      updatePhaseImage(phaseKey, index, dataUrl);
-      setStatus(`Imagem ${index + 1} da etapa ${phaseKey} carregada.`);
-    } catch {
-      setStatus("Erro ao carregar a imagem.");
+      setLoading(true);
+      const url = await uploadImagem(file);
+      updatePhaseSlot(phaseKey, slotId, url);
+      setStatus(`Foto da etapa ${phaseKey} enviada.`);
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Erro ao enviar imagem.");
+    } finally {
+      setLoading(false);
     }
   }
 
-  function buildLink(origin: string) {
-    const params = new URLSearchParams();
-    Object.entries(client).forEach(([key, value]) => {
-      if (value.trim()) params.set(key, value.trim());
-    });
-    if (client.cidade_obra.trim()) {
-      params.set("cidade", client.cidade_obra.trim());
-    }
-    if (images.hero.trim() && images.hero !== DEFAULT_PROPOSTA_IMAGES.hero) {
-      params.set("img_hero", images.hero.trim());
-    }
-    Object.entries(serializePhaseImages(images.phases)).forEach(([key, value]) => {
-      params.set(key, value);
-    });
+  async function salvarProposta(abrirNovaAba: boolean) {
+    setLoading(true);
+    setStatus("");
+    try {
+      const phasesPayload = Object.fromEntries(
+        Object.entries(images.phases).map(([key, slots]) => [
+          key,
+          slots.map((slot) => slot.url.trim()).filter(Boolean),
+        ]),
+      );
 
-    const base = destino === "proposta" ? "/apresentacao/proposta" : "/apresentacao";
-    return `${origin}${base}/?${params.toString()}`;
+      const response = await fetch("/api/propostas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          destino,
+          dados: client,
+          imagens: {
+            hero: images.hero.trim(),
+            phases: phasesPayload,
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        const erro = await response.text();
+        throw new Error(erro || "Falha ao salvar a proposta.");
+      }
+
+      const data = (await response.json()) as { url: string; slug: string };
+      setLink(data.url);
+      setStatus(`Link criado: /${destino === "proposta" ? "proposta" : "apresentacao"}/${data.slug}/`);
+
+      if (abrirNovaAba) {
+        window.open(data.url, "_blank", "noopener,noreferrer");
+      }
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Erro ao gerar proposta.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   function onSubmit(event: FormEvent) {
     event.preventDefault();
-    const url = buildLink(window.location.origin);
-    if (url.length > 7000) {
-      setStatus("Link muito longo. Use URLs curtas (/images/... ou links externos) em vez de upload direto.");
-      return;
-    }
-    setLink(url);
-    window.open(url, "_blank", "noopener,noreferrer");
-    setStatus("Proposta aberta em nova aba.");
+    void salvarProposta(true);
   }
 
   async function copiarLink() {
@@ -230,7 +277,8 @@ export function GerarPropostaForm() {
         Gerar Proposta
       </h1>
       <p className="mt-3 text-center text-sm text-[#666]">
-        Personalize as imagens e gere o link da apresentação para o cliente.
+        Gera um link curto no formato{" "}
+        <strong>/proposta/nome-do-cliente-id</strong> com fotos hospedadas no servidor.
       </p>
 
       <form onSubmit={onSubmit} className="mt-6 space-y-8">
@@ -244,7 +292,7 @@ export function GerarPropostaForm() {
                 checked={destino === "proposta"}
                 onChange={() => setDestino("proposta")}
               />
-              Com contrato (/apresentacao/proposta)
+              Com contrato (/proposta/nome-id)
             </label>
             <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-[#e4e4e4] px-3 py-2.5 text-sm">
               <input
@@ -253,7 +301,7 @@ export function GerarPropostaForm() {
                 checked={destino === "apresentacao"}
                 onChange={() => setDestino("apresentacao")}
               />
-              Só apresentação (/apresentacao)
+              Só apresentação (/apresentacao/nome-id)
             </label>
           </div>
         </section>
@@ -283,7 +331,6 @@ export function GerarPropostaForm() {
                 className={inputClass}
                 value={client.cidade_cliente}
                 onChange={(e) => updateClient("cidade_cliente", e.target.value)}
-                placeholder="São José dos Campos - SP"
                 required
               />
             </Field>
@@ -300,7 +347,6 @@ export function GerarPropostaForm() {
                 className={inputClass}
                 value={client.condominio}
                 onChange={(e) => updateClient("condominio", e.target.value)}
-                placeholder="Condomínio Quinta das Flores"
                 required
               />
             </Field>
@@ -309,7 +355,6 @@ export function GerarPropostaForm() {
                 className={inputClass}
                 value={client.cidade_obra}
                 onChange={(e) => updateClient("cidade_obra", e.target.value)}
-                placeholder="São José dos Campos - SP"
                 required
               />
             </Field>
@@ -318,7 +363,6 @@ export function GerarPropostaForm() {
                 className={inputClass}
                 value={client.objeto_proposta}
                 onChange={(e) => updateClient("objeto_proposta", e.target.value)}
-                placeholder="Projeto de Arquitetura e Interiores para uma Clínica Médica"
                 required
               />
             </Field>
@@ -327,7 +371,6 @@ export function GerarPropostaForm() {
                 className={inputClass}
                 value={client.metragem}
                 onChange={(e) => updateClient("metragem", applyDecimalMask(e.target.value))}
-                placeholder="400,00"
                 required
               />
             </Field>
@@ -336,7 +379,6 @@ export function GerarPropostaForm() {
                 className={inputClass}
                 value={client.area_terreno}
                 onChange={(e) => updateClient("area_terreno", applyDecimalMask(e.target.value))}
-                placeholder="2.000,00"
                 required
               />
             </Field>
@@ -378,7 +420,8 @@ export function GerarPropostaForm() {
         <section>
           <h2 className="text-base font-semibold text-[#333]">Imagens</h2>
           <p className="mt-2 text-sm text-[#666]">
-            Cada etapa aceita uma ou mais fotos horizontais. Mínimo de 1 foto por etapa.
+            Envie uma ou mais fotos horizontais por etapa. As imagens ficam no servidor — o link final fica
+            curto.
           </p>
 
           <div className="mt-4 space-y-4">
@@ -387,38 +430,36 @@ export function GerarPropostaForm() {
               value={images.hero}
               onChange={updateHeroImage}
               onFileSelect={(event) => void onHeroFileSelect(event)}
+              disabled={loading}
             />
 
             {phaseLabels.map((phase) => (
               <PhaseImagesField
-                key={phase.key}
+                key={phase.phaseKey}
                 label={phase.label}
-                phaseKey={phase.key.replace("img_", "")}
-                values={images.phases[phase.key.replace("img_", "")] ?? [""]}
-                onChange={(index, value) => updatePhaseImage(phase.key.replace("img_", ""), index, value)}
-                onAdd={() => addPhaseImage(phase.key.replace("img_", ""))}
-                onRemove={(index) => removePhaseImage(phase.key.replace("img_", ""), index)}
-                onFileSelect={(index, event) =>
-                  void onPhaseFileSelect(phase.key.replace("img_", ""), index, event)
+                phaseKey={phase.phaseKey}
+                slots={images.phases[phase.phaseKey] ?? [criarSlot()]}
+                onChange={(slotId, value) => updatePhaseSlot(phase.phaseKey, slotId, value)}
+                onAdd={() => addPhaseImage(phase.phaseKey)}
+                onRemove={(slotId) => removePhaseSlot(phase.phaseKey, slotId)}
+                onFileSelect={(slotId, event) =>
+                  void onPhaseFileSelect(phase.phaseKey, slotId, event)
                 }
+                disabled={loading}
               />
             ))}
           </div>
         </section>
 
         <div className="flex flex-col gap-2 sm:flex-row">
-          <button type="submit" className={btnPrimary} disabled={!clientComplete}>
-            Gerar e abrir proposta
+          <button type="submit" className={btnPrimary} disabled={!clientComplete || loading}>
+            {loading ? "Salvando..." : "Gerar e abrir proposta"}
           </button>
           <button
             type="button"
             className={btnSecondary}
-            disabled={!clientComplete}
-            onClick={() => {
-              const url = buildLink(window.location.origin);
-              setLink(url);
-              setStatus("Link gerado abaixo.");
-            }}
+            disabled={!clientComplete || loading}
+            onClick={() => void salvarProposta(false)}
           >
             Só gerar link
           </button>
@@ -461,12 +502,15 @@ function ImageField({
   value,
   onChange,
   onFileSelect,
+  disabled,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   onFileSelect: (event: ChangeEvent<HTMLInputElement>) => void;
+  disabled?: boolean;
 }) {
+  const inputId = `file-${label.replace(/\s+/g, "-").toLowerCase()}`;
   return (
     <div className="rounded-lg border border-[#ececec] p-3">
       <p className="text-sm font-medium text-[#333]">{label}</p>
@@ -477,9 +521,16 @@ function ImageField({
           onChange={(e) => onChange(e.target.value)}
           placeholder="/images/hero-bg.jpg ou https://..."
         />
-        <label className={`${btnSecondary} cursor-pointer text-center`}>
+        <label htmlFor={inputId} className={`${btnSecondary} cursor-pointer text-center ${disabled ? "opacity-50" : ""}`}>
           Enviar arquivo
-          <input type="file" accept="image/*" className="hidden" onChange={onFileSelect} />
+          <input
+            id={inputId}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            disabled={disabled}
+            onChange={onFileSelect}
+          />
         </label>
       </div>
       {value ? (
@@ -492,69 +543,80 @@ function ImageField({
 function PhaseImagesField({
   label,
   phaseKey,
-  values,
+  slots,
   onChange,
   onAdd,
   onRemove,
   onFileSelect,
+  disabled,
 }: {
   label: string;
   phaseKey: string;
-  values: string[];
-  onChange: (index: number, value: string) => void;
+  slots: ImageSlot[];
+  onChange: (slotId: string, value: string) => void;
   onAdd: () => void;
-  onRemove: (index: number) => void;
-  onFileSelect: (index: number, event: ChangeEvent<HTMLInputElement>) => void;
+  onRemove: (slotId: string) => void;
+  onFileSelect: (slotId: string, event: ChangeEvent<HTMLInputElement>) => void;
+  disabled?: boolean;
 }) {
   return (
     <div className="rounded-lg border border-[#ececec] p-3">
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm font-medium text-[#333]">{label}</p>
-        <button type="button" className="text-xs font-semibold text-[#911419]" onClick={onAdd}>
+        <button type="button" className="text-xs font-semibold text-[#911419]" onClick={onAdd} disabled={disabled}>
           + Adicionar foto
         </button>
       </div>
       <div className="mt-3 space-y-3">
-        {values.map((value, index) => (
-          <div key={`${phaseKey}-${index}`} className="rounded-md border border-[#f0f0f0] p-3">
-            <div className="mb-2 flex items-center justify-between">
-              <span className="text-xs font-medium text-[#666]">Foto {index + 1}</span>
-              {values.length > 1 ? (
-                <button
-                  type="button"
-                  className="text-xs text-[#999] hover:text-[#911419]"
-                  onClick={() => onRemove(index)}
+        {slots.map((slot, index) => {
+          const inputId = `file-${phaseKey}-${slot.id}`;
+          return (
+            <div key={slot.id} className="rounded-md border border-[#f0f0f0] p-3">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-xs font-medium text-[#666]">Foto {index + 1}</span>
+                {slots.length > 1 ? (
+                  <button
+                    type="button"
+                    className="text-xs text-[#999] hover:text-[#911419]"
+                    onClick={() => onRemove(slot.id)}
+                    disabled={disabled}
+                  >
+                    Remover
+                  </button>
+                ) : null}
+              </div>
+              <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
+                <input
+                  className={inputClass}
+                  value={slot.url}
+                  onChange={(e) => onChange(slot.id, e.target.value)}
+                  placeholder="/images/phase-01.jpg ou https://..."
+                />
+                <label
+                  htmlFor={inputId}
+                  className={`${btnSecondary} cursor-pointer text-center ${disabled ? "opacity-50" : ""}`}
                 >
-                  Remover
-                </button>
+                  Enviar arquivo
+                  <input
+                    id={inputId}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    disabled={disabled}
+                    onChange={(event) => onFileSelect(slot.id, event)}
+                  />
+                </label>
+              </div>
+              {slot.url ? (
+                <img
+                  src={slot.url}
+                  alt={`${label} ${index + 1}`}
+                  className="mt-3 aspect-[16/9] w-full rounded-md object-cover"
+                />
               ) : null}
             </div>
-            <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
-              <input
-                className={inputClass}
-                value={value}
-                onChange={(e) => onChange(index, e.target.value)}
-                placeholder="/images/phase-01.jpg ou https://..."
-              />
-              <label className={`${btnSecondary} cursor-pointer text-center`}>
-                Enviar arquivo
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(event) => onFileSelect(index, event)}
-                />
-              </label>
-            </div>
-            {value ? (
-              <img
-                src={value}
-                alt={`${label} ${index + 1}`}
-                className="mt-3 aspect-[16/9] w-full rounded-md object-cover"
-              />
-            ) : null}
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
