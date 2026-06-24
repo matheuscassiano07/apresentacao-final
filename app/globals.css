@@ -1016,4 +1016,28 @@
   nav::after {
     background: transparent !important;
   }
+
+  /* Visual compacto (~80% zoom) nas páginas de proposta/apresentação */
+  .proposta-compact {
+    zoom: 0.8;
+  }
+
+  @supports not (zoom: 0.8) {
+    .proposta-compact {
+      transform: scale(0.8);
+      transform-origin: top center;
+      width: 125%;
+      margin-inline: auto;
+    }
+  }
+
+  .proposta-section {
+    break-inside: avoid-page;
+    page-break-inside: avoid;
+  }
+
+  .proposta-exporting * {
+    animation: none !important;
+    transition: none !important;
+  }
 }

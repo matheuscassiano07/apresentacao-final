@@ -56,29 +56,33 @@ export function PropostaEditorPage({
   variant = "apresentacao",
 }: PropostaEditorPageProps) {
   return (
-    <main className="relative pb-20 lg:pb-0">
-      <PhaseHero
-        nomeCliente={propostaData.nomeCliente}
-        dataValidade={propostaData.dataValidade}
-        backgroundImage={heroImage}
-        headline={variant === "proposta" ? "Proposta" : "Apresentação"}
-      />
+    <main id="proposta-export-root" className="proposta-compact relative pb-16 lg:pb-0">
+      <div className="proposta-section">
+        <PhaseHero
+          nomeCliente={propostaData.nomeCliente}
+          dataValidade={propostaData.dataValidade}
+          backgroundImage={heroImage}
+          headline={variant === "proposta" ? "Proposta" : "Apresentação"}
+        />
+      </div>
 
       {variant === "proposta" ? (
-        <EscopoSection
-          nomeCliente={propostaData.nomeCliente}
-          cidadeCliente={propostaData.cidadeCliente}
-          telefone={propostaData.telefone}
-          condominio={propostaData.condominio}
-          cidadeObra={propostaData.cidadeObra}
-          objetoProposta={propostaData.objetoProposta}
-          areaPretendida={propostaData.areaPretendida}
-          areaTerreno={propostaData.areaTerreno}
-        />
+        <div className="proposta-section">
+          <EscopoSection
+            nomeCliente={propostaData.nomeCliente}
+            cidadeCliente={propostaData.cidadeCliente}
+            telefone={propostaData.telefone}
+            condominio={propostaData.condominio}
+            cidadeObra={propostaData.cidadeObra}
+            objetoProposta={propostaData.objetoProposta}
+            areaPretendida={propostaData.areaPretendida}
+            areaTerreno={propostaData.areaTerreno}
+          />
+        </div>
       ) : null}
 
       {phases.map((phase, index) => (
-        <div key={phase.id}>
+        <div key={phase.id} className="proposta-section">
           <PhaseSection
             id={phase.id}
             number={phase.number}
@@ -95,29 +99,36 @@ export function PropostaEditorPage({
 
       {variant === "proposta" ? (
         <>
-          <InvestmentSection
-            valorTotal={propostaData.valorTotal}
-            valorM2={propostaData.valorM2}
-            metragem={propostaData.metragem}
-          />
-          <TermsSection
-            cidade={propostaData.cidade}
-            condominio={propostaData.condominio}
-            metragem={propostaData.metragem}
-            valorM2={propostaData.valorM2}
-            valorTotal={propostaData.valorTotal}
-          />
-          <FooterCTA
-            dataDia={propostaData.dataDia}
-            dataMes={propostaData.dataMes}
-            dataAno={propostaData.dataAno}
-            nomeCliente={propostaData.nomeCliente}
-            cpf={propostaData.cpf}
-            downloadUrl={propostaData.downloadUrl}
-          />
+          <div className="proposta-section">
+            <InvestmentSection
+              valorTotal={propostaData.valorTotal}
+              valorM2={propostaData.valorM2}
+              metragem={propostaData.metragem}
+            />
+          </div>
+          <div className="proposta-section">
+            <TermsSection
+              cidade={propostaData.cidade}
+              condominio={propostaData.condominio}
+              metragem={propostaData.metragem}
+              valorM2={propostaData.valorM2}
+              valorTotal={propostaData.valorTotal}
+            />
+          </div>
+          <div className="proposta-section">
+            <FooterCTA
+              dataDia={propostaData.dataDia}
+              dataMes={propostaData.dataMes}
+              dataAno={propostaData.dataAno}
+              nomeCliente={propostaData.nomeCliente}
+              cpf={propostaData.cpf}
+            />
+          </div>
         </>
       ) : (
-        <CallToAction />
+        <div className="proposta-section">
+          <CallToAction nomeCliente={propostaData.nomeCliente} />
+        </div>
       )}
     </main>
   );

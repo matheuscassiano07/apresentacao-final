@@ -1,8 +1,13 @@
 "use client";
 
 import { Phone, Globe, Instagram } from "lucide-react";
+import { BaixarPropostaPdfButton } from "@/components/proposta/baixar-proposta-pdf-button";
 
-export function CallToAction() {
+interface CallToActionProps {
+  nomeCliente?: string;
+}
+
+export function CallToAction({ nomeCliente = "cliente" }: CallToActionProps) {
   const whatsappNumber = "5512997145577";
   const whatsappMessage = "Olá! Vi a apresentação e gostaria de mais informações.";
   const websiteUrl = "https://bevilacqua.com.br";
@@ -95,6 +100,12 @@ export function CallToAction() {
             <div className="pointer-events-none absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
           </a>
         </nav>
+
+        <BaixarPropostaPdfButton
+          nomeCliente={nomeCliente}
+          label="Baixar PDF da Apresentação"
+          className="mt-10 inline-flex items-center gap-3 rounded-xl bg-background px-8 py-4 text-sm font-medium uppercase tracking-widest text-foreground shadow-[0_20px_40px_rgba(0,0,0,0.15)] transition-all duration-300 hover:-translate-y-1 hover:bg-background/90 disabled:cursor-wait disabled:opacity-70"
+        />
 
         {/* Informação Adicional */}
         <div className="mt-16 animate-fade-lift" style={{ animationDelay: "300ms" }}>

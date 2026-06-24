@@ -1,7 +1,8 @@
 "use client";
 
-import { Download, Phone, Mail, MapPin } from "lucide-react";
+import { Phone, Mail, MapPin } from "lucide-react";
 import Image from "next/image";
+import { BaixarPropostaPdfButton } from "@/components/proposta/baixar-proposta-pdf-button";
 
 interface FooterCTAProps {
   dataDia: string;
@@ -9,7 +10,6 @@ interface FooterCTAProps {
   dataAno: string;
   nomeCliente: string;
   cpf: string;
-  downloadUrl: string;
 }
 
 export function FooterCTA({
@@ -18,10 +18,7 @@ export function FooterCTA({
   dataAno,
   nomeCliente,
   cpf,
-  downloadUrl,
 }: FooterCTAProps) {
-  const hasPdfDownload = downloadUrl.trim() !== "#" && downloadUrl.trim() !== "";
-
   return (
     <footer className="bg-foreground">
       {/* CTA */}
@@ -35,20 +32,7 @@ export function FooterCTA({
           seu sonho em realidade?
         </h2>
 
-        {hasPdfDownload ? (
-          <a
-            href={downloadUrl}
-            className="mt-8 inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-xs uppercase tracking-[0.12em] text-background shadow-[0_12px_30px_rgba(145,20,25,0.35)] transition-all duration-500 hover:-translate-y-0.5 hover:bg-primary/90 sm:mt-10 sm:gap-3 sm:px-10 sm:py-5 sm:text-base sm:tracking-widest"
-          >
-            <Download className="h-6 w-6" />
-            Baixar Contrato
-          </a>
-        ) : (
-          <p className="mt-8 text-xs uppercase tracking-[0.12em] text-background/60 sm:mt-10 sm:text-sm sm:tracking-widest">
-            Download do contrato indisponível sem backend configurado.
-          </p>
-        )}
-
+        <BaixarPropostaPdfButton nomeCliente={nomeCliente} />
       </div>
 
       {/* Assinaturas */}
