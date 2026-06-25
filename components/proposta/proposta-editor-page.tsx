@@ -7,6 +7,8 @@ import { CallToAction } from "@/components/proposta/call-to-action";
 import { InvestmentSection } from "@/components/proposta/investment-section";
 import { TermsSection } from "@/components/proposta/terms-section";
 import { FooterCTA } from "@/components/proposta/footer-cta";
+import type { ImageAdjustments } from "@/lib/proposta-image-fit";
+import { criarAjusteImagem } from "@/lib/proposta-image-fit";
 
 interface PhaseData {
   id: string;
@@ -16,6 +18,7 @@ interface PhaseData {
   description: string;
   image: string;
   images?: string[];
+  gallery?: ImageAdjustments[];
   variant: "light" | "dark";
 }
 
@@ -43,7 +46,7 @@ interface PropostaData {
 interface PropostaEditorPageProps {
   propostaData: PropostaData;
   phases: PhaseData[];
-  heroImage?: string;
+  heroImage?: ImageAdjustments;
   isReadonly?: boolean;
   variant?: "apresentacao" | "proposta";
 }
@@ -51,7 +54,7 @@ interface PropostaEditorPageProps {
 export function PropostaEditorPage({
   propostaData,
   phases,
-  heroImage = "/images/hero-bg.jpg",
+  heroImage = criarAjusteImagem("/images/hero-bg.jpg"),
   isReadonly = false,
   variant = "apresentacao",
 }: PropostaEditorPageProps) {
@@ -91,6 +94,7 @@ export function PropostaEditorPage({
             description={phase.description}
             image={phase.image}
             images={phase.images}
+            gallery={phase.gallery}
             variant={phase.variant}
             sectionIndex={index}
           />

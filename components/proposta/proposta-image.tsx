@@ -1,4 +1,5 @@
 import Image from "next/image";
+import type { CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 
 interface PropostaImageProps {
@@ -7,6 +8,7 @@ interface PropostaImageProps {
   className?: string;
   fill?: boolean;
   priority?: boolean;
+  style?: CSSProperties;
 }
 
 function isRemoteOrDataUrl(src: string): boolean {
@@ -18,12 +20,13 @@ function isRemoteOrDataUrl(src: string): boolean {
   );
 }
 
-export function PropostaImage({ src, alt, className, fill, priority }: PropostaImageProps) {
+export function PropostaImage({ src, alt, className, fill, priority, style }: PropostaImageProps) {
   if (isRemoteOrDataUrl(src)) {
     return (
       <img
         src={src}
         alt={alt}
+        style={style}
         className={cn(fill && "absolute inset-0 h-full w-full", className)}
       />
     );
@@ -36,6 +39,7 @@ export function PropostaImage({ src, alt, className, fill, priority }: PropostaI
       fill={fill}
       priority={priority}
       className={className}
+      style={style}
       unoptimized
     />
   );

@@ -2,6 +2,9 @@
 
 import { useEffect, useRef } from "react";
 import { PropostaImage } from "@/components/proposta/proposta-image";
+import { PropostaImageFrame } from "@/components/proposta/proposta-image-frame";
+import type { ImageAdjustments } from "@/lib/proposta-image-fit";
+import { ajusteImagemParaEstilo, criarAjusteImagem } from "@/lib/proposta-image-fit";
 import { cn } from "@/lib/utils";
 
 interface PhaseSectionProps {
@@ -12,6 +15,7 @@ interface PhaseSectionProps {
   description: string;
   image: string;
   images?: string[];
+  gallery?: ImageAdjustments[];
   variant?: "light" | "dark";
   sectionIndex?: number;
 }
@@ -24,6 +28,7 @@ export function PhaseSection({
   description,
   image,
   images = [],
+  gallery,
   variant = "light",
   sectionIndex = 0,
 }: PhaseSectionProps) {
@@ -49,8 +54,12 @@ export function PhaseSection({
   }, []);
 
   const isDark = variant === "dark";
-  const sectionIdx = Number.parseInt(number, 10) || sectionIndex + 1;
-  const gallery = (images.length > 0 ? images : [image]).filter(Boolean);
+  const galleryItems =
+    gallery && gallery.length > 0
+      ? gallery
+      : (images.length > 0 ? images : [image])
+          .filter(Boolean)
+          .map((src) => criarAjusteImagem(src));
 
   return (
     <section
@@ -107,21 +116,16 @@ export function PhaseSection({
         </p>
 
         <div className="animate-item mt-10 space-y-5 duration-700">
-          {gallery.map((src, idx) => (
-            <div
-              key={`${id}-img-${idx}`}
-              className={cn(
-                "relative aspect-[16/9] w-full overflow-hidden rounded-2xl border shadow-[0_18px_40px_rgba(0,0,0,0.16)]",
-                isDark ? "border-background/20 bg-background/5" : "border-foreground/20 bg-background",
-              )}
-            >
+          {galleryItems.map((item, idx) => (
+            <PropostaImageFrame key={`${id}-img-${idx}`} ajuste={item} variant={isDark ? "dark" : "light"}>
               <PropostaImage
-                src={src}
+                src={item.url}
                 alt={`${title} — foto ${idx + 1}`}
                 fill
                 className="object-cover"
+                style={ajusteImagemParaEstilo(item)}
               />
-            </div>
+            </PropostaImageFrame>
           ))}
         </div>
       </div>

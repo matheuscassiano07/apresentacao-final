@@ -2,7 +2,7 @@ import { GerarPropostaForm } from "@/components/proposta/gerar-proposta-form";
 
 export default function GerarPropostaPage() {
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,#f8f8f8_0%,#eceff3_100%)] px-3 py-10 sm:px-4">
+    <div className="min-h-screen bg-[#f4f4f5] px-3 py-6 sm:px-4 sm:py-10">
       <GerarPropostaForm />
     </div>
   );

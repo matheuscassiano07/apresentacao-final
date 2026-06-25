@@ -4,7 +4,14 @@ import Link from "next/link";
 import { upload } from "@vercel/blob/client";
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 import { buildPhasesForVariant } from "@/lib/proposta-phases";
-import { DEFAULT_PROPOSTA_IMAGES, defaultPhaseImageLists } from "@/lib/proposta-images";
+import { defaultPhaseImageLists } from "@/lib/proposta-images";
+import {
+  type ImageAdjustments,
+  criarAjusteImagem,
+  normalizarAjusteImagem,
+} from "@/lib/proposta-image-fit";
+import { ImageAdjustmentEditor } from "@/components/proposta/image-adjustment-editor";
+import { cn } from "@/lib/utils";
 
 type ClientFields = {
   nome_cliente: string;
@@ -22,15 +29,14 @@ type ClientFields = {
   data_ano: string;
 };
 
-type ImageSlot = {
-  id: string;
-  url: string;
-};
+type ImageSlot = ImageAdjustments & { id: string };
 
 type ImageFields = {
-  hero: string;
+  hero: ImageSlot;
   phases: Record<string, ImageSlot[]>;
 };
+
+type FormTab = "dados" | "fotos" | "link";
 
 const defaultClient: ClientFields = {
   nome_cliente: "",
@@ -49,16 +55,26 @@ const defaultClient: ClientFields = {
 };
 
 function criarSlot(url = ""): ImageSlot {
-  return { id: crypto.randomUUID(), url };
+  return { id: crypto.randomUUID(), ...criarAjusteImagem(url) };
 }
 
 function criarFasesIniciais(destino: "proposta" | "apresentacao"): Record<string, ImageSlot[]> {
   return Object.fromEntries(
-    Object.entries(defaultPhaseImageLists(destino)).map(([key, urls]) => [
+    Object.entries(defaultPhaseImageLists(destino)).map(([key, ajustes]) => [
       key,
-      urls.length > 0 ? urls.map((url) => criarSlot(url)) : [criarSlot()],
+      ajustes.length > 0
+        ? ajustes.map((ajuste) => ({ id: crypto.randomUUID(), ...ajuste }))
+        : [criarSlot()],
     ]),
   );
+}
+
+function criarHeroInicial(): ImageSlot {
+  return criarSlot("/images/hero-bg.jpg");
+}
+
+function slotSemId({ id: _id, ...ajuste }: ImageSlot): ImageAdjustments {
+  return normalizarAjusteImagem(ajuste);
 }
 
 function onlyDigits(value: string) {
@@ -117,9 +133,7 @@ async function uploadImagemServidor(file: File): Promise<string> {
   const body = new FormData();
   body.append("file", file);
   const response = await fetch("/api/propostas/upload", { method: "POST", body });
-  if (!response.ok) {
-    throw new Error(await lerErroApi(response));
-  }
+  if (!response.ok) throw new Error(await lerErroApi(response));
   const data = (await response.json()) as { url?: string; erro?: string };
   if (!data.url) throw new Error(data.erro || "URL da imagem não retornada.");
   return data.url;
@@ -140,28 +154,29 @@ async function uploadImagem(file: File): Promise<string> {
 export function GerarPropostaForm() {
   const [client, setClient] = useState<ClientFields>(defaultClient);
   const [images, setImages] = useState<ImageFields>({
-    hero: DEFAULT_PROPOSTA_IMAGES.hero,
+    hero: criarHeroInicial(),
     phases: criarFasesIniciais("proposta"),
   });
   const [status, setStatus] = useState("");
   const [link, setLink] = useState("");
   const [destino, setDestino] = useState<"proposta" | "apresentacao">("proposta");
   const [loading, setLoading] = useState(false);
+  const [tab, setTab] = useState<FormTab>("dados");
+  const [faseAberta, setFaseAberta] = useState<string | null>("hero");
 
   const phaseLabels = useMemo(
     () =>
       buildPhasesForVariant(destino).map((phase) => ({
         phaseKey: phase.number,
-        label: `Etapa ${phase.number} — ${phase.title}`,
+        label: phase.title,
+        short: `Etapa ${phase.number}`,
       })),
     [destino],
   );
 
   useEffect(() => {
-    setImages((prev) => ({
-      ...prev,
-      phases: criarFasesIniciais(destino),
-    }));
+    setImages((prev) => ({ ...prev, phases: criarFasesIniciais(destino) }));
+    setFaseAberta("hero");
   }, [destino]);
 
   const clientComplete = useMemo(
@@ -169,21 +184,34 @@ export function GerarPropostaForm() {
     [client],
   );
 
+  const fotosConfiguradas = useMemo(() => {
+    let count = images.hero.url.trim() ? 1 : 0;
+    Object.values(images.phases).forEach((slots) => {
+      count += slots.filter((s) => s.url.trim()).length;
+    });
+    return count;
+  }, [images]);
+
   function updateClient<K extends keyof ClientFields>(key: K, value: ClientFields[K]) {
     setClient((prev) => ({ ...prev, [key]: value }));
   }
 
-  function updateHeroImage(value: string) {
-    setImages((prev) => ({ ...prev, hero: value }));
+  function updateHero(ajuste: Partial<ImageAdjustments>) {
+    setImages((prev) => ({
+      ...prev,
+      hero: { ...prev.hero, ...normalizarAjusteImagem({ ...prev.hero, ...ajuste }) },
+    }));
   }
 
-  function updatePhaseSlot(phaseKey: string, slotId: string, url: string) {
+  function updatePhaseSlot(phaseKey: string, slotId: string, ajuste: Partial<ImageAdjustments>) {
     setImages((prev) => ({
       ...prev,
       phases: {
         ...prev.phases,
         [phaseKey]: (prev.phases[phaseKey] ?? [criarSlot()]).map((slot) =>
-          slot.id === slotId ? { ...slot, url } : slot,
+          slot.id === slotId
+            ? { ...slot, ...normalizarAjusteImagem({ ...slot, ...ajuste }) }
+            : slot,
         ),
       },
     }));
@@ -205,10 +233,7 @@ export function GerarPropostaForm() {
       if (current.length <= 1) return prev;
       return {
         ...prev,
-        phases: {
-          ...prev.phases,
-          [phaseKey]: current.filter((slot) => slot.id !== slotId),
-        },
+        phases: { ...prev.phases, [phaseKey]: current.filter((slot) => slot.id !== slotId) },
       };
     });
   }
@@ -219,8 +244,9 @@ export function GerarPropostaForm() {
     if (!file) return;
     try {
       setLoading(true);
-      updateHeroImage(await uploadImagem(file));
-      setStatus("Capa enviada com sucesso.");
+      updateHero({ url: await uploadImagem(file) });
+      setFaseAberta("hero");
+      setStatus("Capa enviada.");
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Erro ao enviar capa.");
     } finally {
@@ -234,8 +260,8 @@ export function GerarPropostaForm() {
     if (!file) return;
     try {
       setLoading(true);
-      const url = await uploadImagem(file);
-      updatePhaseSlot(phaseKey, slotId, url);
+      updatePhaseSlot(phaseKey, slotId, { url: await uploadImagem(file) });
+      setFaseAberta(phaseKey);
       setStatus(`Foto da etapa ${phaseKey} enviada.`);
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Erro ao enviar imagem.");
@@ -251,7 +277,7 @@ export function GerarPropostaForm() {
       const phasesPayload = Object.fromEntries(
         Object.entries(images.phases).map(([key, slots]) => [
           key,
-          slots.map((slot) => slot.url.trim()).filter(Boolean),
+          slots.map((slot) => slotSemId(slot)).filter((slot) => slot.url.trim()),
         ]),
       );
 
@@ -261,24 +287,18 @@ export function GerarPropostaForm() {
         body: JSON.stringify({
           destino,
           dados: client,
-          imagens: {
-            hero: images.hero.trim(),
-            phases: phasesPayload,
-          },
+          imagens: { hero: slotSemId(images.hero), phases: phasesPayload },
         }),
       });
 
-      if (!response.ok) {
-        throw new Error(await lerErroApi(response));
-      }
+      if (!response.ok) throw new Error(await lerErroApi(response));
 
       const data = (await response.json()) as { url: string; slug: string };
       setLink(data.url);
-      setStatus(`Link criado: /${destino === "proposta" ? "proposta" : "apresentacao"}/${data.slug}/`);
+      setTab("link");
+      setStatus("Link criado com sucesso.");
 
-      if (abrirNovaAba) {
-        window.open(data.url, "_blank", "noopener,noreferrer");
-      }
+      if (abrirNovaAba) window.open(data.url, "_blank", "noopener,noreferrer");
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Erro ao gerar proposta.");
     } finally {
@@ -302,214 +322,388 @@ export function GerarPropostaForm() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-[900px] rounded-[14px] border border-[#ececec] bg-white p-6 shadow-[0_16px_35px_rgba(0,0,0,0.08)] sm:p-8">
-      <Link href="/admin" className="text-sm text-[#666] hover:text-[#911419]">
-        ← Voltar ao painel
-      </Link>
-      <h1 className="mt-3 border-b border-[#eee] pb-3 text-center text-2xl font-semibold text-[#911419]">
-        Gerar Proposta
-      </h1>
-      <p className="mt-3 text-center text-sm text-[#666]">
-        Gera um link curto no formato{" "}
-        <strong>/proposta/nome-do-cliente-id</strong> com fotos hospedadas no servidor.
-        Em produção, é necessário ter o <strong>Vercel Blob</strong> conectado ao projeto.
-      </p>
-
-      <form onSubmit={onSubmit} className="mt-6 space-y-8">
-        <section>
-          <h2 className="text-base font-semibold text-[#333]">Destino do link</h2>
-          <div className="mt-3 grid gap-2 sm:grid-cols-2">
-            <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-[#e4e4e4] px-3 py-2.5 text-sm">
-              <input
-                type="radio"
-                name="destino"
-                checked={destino === "proposta"}
-                onChange={() => setDestino("proposta")}
-              />
-              Com contrato (/proposta/nome-id)
-            </label>
-            <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-[#e4e4e4] px-3 py-2.5 text-sm">
-              <input
-                type="radio"
-                name="destino"
-                checked={destino === "apresentacao"}
-                onChange={() => setDestino("apresentacao")}
-              />
-              Só apresentação (/apresentacao/nome-id)
-            </label>
+    <div className="relative mx-auto w-full max-w-3xl pb-28 sm:pb-8">
+      {loading ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-[2px]">
+          <div className="rounded-xl bg-white px-6 py-4 shadow-xl">
+            <p className="text-sm font-medium text-[#333]">Enviando…</p>
           </div>
-        </section>
+        </div>
+      ) : null}
 
-        <section>
-          <h2 className="text-base font-semibold text-[#333]">Dados do cliente e escopo</h2>
-          <div className="mt-3 grid gap-3 sm:grid-cols-2">
-            <Field label="Nome do cliente">
-              <input
-                className={inputClass}
-                value={client.nome_cliente}
-                onChange={(e) => updateClient("nome_cliente", e.target.value)}
-                required
-              />
-            </Field>
-            <Field label="Telefone">
-              <input
-                className={inputClass}
-                value={client.telefone}
-                onChange={(e) => updateClient("telefone", applyPhoneMask(e.target.value))}
-                placeholder="(12) 98144-8456"
-                required
-              />
-            </Field>
-            <Field label="Cidade do cliente">
-              <input
-                className={inputClass}
-                value={client.cidade_cliente}
-                onChange={(e) => updateClient("cidade_cliente", e.target.value)}
-                required
-              />
-            </Field>
-            <Field label="CPF">
-              <input
-                className={inputClass}
-                value={client.cpf}
-                onChange={(e) => updateClient("cpf", applyCpfMask(e.target.value))}
-                required
-              />
-            </Field>
-            <Field label="Condomínio / Empreendimento (obra)">
-              <input
-                className={inputClass}
-                value={client.condominio}
-                onChange={(e) => updateClient("condominio", e.target.value)}
-                required
-              />
-            </Field>
-            <Field label="Cidade da obra">
-              <input
-                className={inputClass}
-                value={client.cidade_obra}
-                onChange={(e) => updateClient("cidade_obra", e.target.value)}
-                required
-              />
-            </Field>
-            <Field label="Objeto da proposta" className="sm:col-span-2">
-              <input
-                className={inputClass}
-                value={client.objeto_proposta}
-                onChange={(e) => updateClient("objeto_proposta", e.target.value)}
-                required
-              />
-            </Field>
-            <Field label="Área pretendida (m²)">
-              <input
-                className={inputClass}
-                value={client.metragem}
-                onChange={(e) => updateClient("metragem", applyDecimalMask(e.target.value))}
-                required
-              />
-            </Field>
-            <Field label="Área do terreno (m²)">
-              <input
-                className={inputClass}
-                value={client.area_terreno}
-                onChange={(e) => updateClient("area_terreno", applyDecimalMask(e.target.value))}
-                required
-              />
-            </Field>
-            <Field label="Valor por m²">
-              <input
-                className={inputClass}
-                value={client.valor_m2}
-                onChange={(e) => updateClient("valor_m2", applyDecimalMask(e.target.value))}
-                required
-              />
-            </Field>
-            <Field label="Dia">
-              <input
-                className={inputClass}
-                value={client.data_dia}
-                onChange={(e) => updateClient("data_dia", e.target.value)}
-                required
-              />
-            </Field>
-            <Field label="Mês">
-              <input
-                className={inputClass}
-                value={client.data_mes}
-                onChange={(e) => updateClient("data_mes", e.target.value)}
-                required
-              />
-            </Field>
-            <Field label="Ano">
-              <input
-                className={inputClass}
-                value={client.data_ano}
-                onChange={(e) => updateClient("data_ano", e.target.value)}
-                required
-              />
-            </Field>
-          </div>
-        </section>
-
-        <section>
-          <h2 className="text-base font-semibold text-[#333]">Imagens</h2>
-          <p className="mt-2 text-sm text-[#666]">
-            Envie uma ou mais fotos horizontais por etapa. As imagens ficam no servidor — o link final fica
-            curto.
+      <div className="overflow-hidden rounded-2xl border border-[#e8e8e8] bg-white shadow-[0_8px_30px_rgba(0,0,0,0.06)]">
+        <header className="border-b border-[#eee] px-4 py-5 sm:px-6">
+          <Link href="/admin" className="inline-flex items-center gap-1 text-sm text-[#777] hover:text-[#911419]">
+            ← Painel
+          </Link>
+          <h1 className="mt-2 text-xl font-semibold text-[#911419] sm:text-2xl">Gerar Proposta</h1>
+          <p className="mt-1 text-sm text-[#666]">
+            Preencha os dados, ajuste as fotos e gere um link curto.
           </p>
+        </header>
 
-          <div className="mt-4 space-y-4">
-            <ImageField
-              label="Capa (hero)"
-              value={images.hero}
-              onChange={updateHeroImage}
-              onFileSelect={(event) => void onHeroFileSelect(event)}
-              disabled={loading}
-            />
-
-            {phaseLabels.map((phase) => (
-              <PhaseImagesField
-                key={phase.phaseKey}
-                label={phase.label}
-                phaseKey={phase.phaseKey}
-                slots={images.phases[phase.phaseKey] ?? [criarSlot()]}
-                onChange={(slotId, value) => updatePhaseSlot(phase.phaseKey, slotId, value)}
-                onAdd={() => addPhaseImage(phase.phaseKey)}
-                onRemove={(slotId) => removePhaseSlot(phase.phaseKey, slotId)}
-                onFileSelect={(slotId, event) =>
-                  void onPhaseFileSelect(phase.phaseKey, slotId, event)
-                }
-                disabled={loading}
-              />
+        <div className="border-b border-[#eee] px-2 sm:px-4">
+          <nav className="flex gap-1 overflow-x-auto py-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {(
+              [
+                { id: "dados" as const, label: "Cliente" },
+                { id: "fotos" as const, label: `Fotos (${fotosConfiguradas})` },
+                { id: "link" as const, label: "Link" },
+              ] as const
+            ).map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setTab(item.id)}
+                className={cn(
+                  "shrink-0 rounded-lg px-4 py-2 text-sm font-medium transition",
+                  tab === item.id
+                    ? "bg-[#911419] text-white"
+                    : "text-[#666] hover:bg-[#f5f5f5]",
+                )}
+              >
+                {item.label}
+              </button>
             ))}
-          </div>
-        </section>
+          </nav>
+        </div>
 
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <button type="submit" className={btnPrimary} disabled={!clientComplete || loading}>
-            {loading ? "Salvando..." : "Gerar e abrir proposta"}
+        <form onSubmit={onSubmit} className="px-4 py-5 sm:px-6 sm:py-6">
+          {tab === "dados" ? (
+            <div className="space-y-6">
+              <section>
+                <h2 className="text-sm font-semibold uppercase tracking-wide text-[#888]">Destino</h2>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  <DestinoCard
+                    active={destino === "proposta"}
+                    title="Com contrato"
+                    desc="/proposta/nome-id"
+                    onClick={() => setDestino("proposta")}
+                  />
+                  <DestinoCard
+                    active={destino === "apresentacao"}
+                    title="Só apresentação"
+                    desc="/apresentacao/nome-id"
+                    onClick={() => setDestino("apresentacao")}
+                  />
+                </div>
+              </section>
+
+              <section>
+                <h2 className="text-sm font-semibold uppercase tracking-wide text-[#888]">
+                  Dados do cliente
+                </h2>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <Field label="Nome do cliente">
+                    <input
+                      className={inputClass}
+                      value={client.nome_cliente}
+                      onChange={(e) => updateClient("nome_cliente", e.target.value)}
+                      required
+                    />
+                  </Field>
+                  <Field label="Telefone">
+                    <input
+                      className={inputClass}
+                      value={client.telefone}
+                      onChange={(e) => updateClient("telefone", applyPhoneMask(e.target.value))}
+                      placeholder="(12) 98144-8456"
+                      required
+                    />
+                  </Field>
+                  <Field label="Cidade do cliente">
+                    <input
+                      className={inputClass}
+                      value={client.cidade_cliente}
+                      onChange={(e) => updateClient("cidade_cliente", e.target.value)}
+                      required
+                    />
+                  </Field>
+                  <Field label="CPF">
+                    <input
+                      className={inputClass}
+                      value={client.cpf}
+                      onChange={(e) => updateClient("cpf", applyCpfMask(e.target.value))}
+                      required
+                    />
+                  </Field>
+                  <Field label="Condomínio / Empreendimento">
+                    <input
+                      className={inputClass}
+                      value={client.condominio}
+                      onChange={(e) => updateClient("condominio", e.target.value)}
+                      required
+                    />
+                  </Field>
+                  <Field label="Cidade da obra">
+                    <input
+                      className={inputClass}
+                      value={client.cidade_obra}
+                      onChange={(e) => updateClient("cidade_obra", e.target.value)}
+                      required
+                    />
+                  </Field>
+                  <Field label="Objeto da proposta" className="sm:col-span-2">
+                    <input
+                      className={inputClass}
+                      value={client.objeto_proposta}
+                      onChange={(e) => updateClient("objeto_proposta", e.target.value)}
+                      required
+                    />
+                  </Field>
+                  <Field label="Área pretendida (m²)">
+                    <input
+                      className={inputClass}
+                      value={client.metragem}
+                      onChange={(e) => updateClient("metragem", applyDecimalMask(e.target.value))}
+                      required
+                    />
+                  </Field>
+                  <Field label="Área do terreno (m²)">
+                    <input
+                      className={inputClass}
+                      value={client.area_terreno}
+                      onChange={(e) => updateClient("area_terreno", applyDecimalMask(e.target.value))}
+                      required
+                    />
+                  </Field>
+                  <Field label="Valor por m²">
+                    <input
+                      className={inputClass}
+                      value={client.valor_m2}
+                      onChange={(e) => updateClient("valor_m2", applyDecimalMask(e.target.value))}
+                      required
+                    />
+                  </Field>
+                  <Field label="Dia">
+                    <input
+                      className={inputClass}
+                      value={client.data_dia}
+                      onChange={(e) => updateClient("data_dia", e.target.value)}
+                      required
+                    />
+                  </Field>
+                  <Field label="Mês">
+                    <input
+                      className={inputClass}
+                      value={client.data_mes}
+                      onChange={(e) => updateClient("data_mes", e.target.value)}
+                      required
+                    />
+                  </Field>
+                  <Field label="Ano">
+                    <input
+                      className={inputClass}
+                      value={client.data_ano}
+                      onChange={(e) => updateClient("data_ano", e.target.value)}
+                      required
+                    />
+                  </Field>
+                </div>
+              </section>
+
+              <button
+                type="button"
+                className={btnSecondary + " w-full"}
+                onClick={() => setTab("fotos")}
+              >
+                Continuar para fotos →
+              </button>
+            </div>
+          ) : null}
+
+          {tab === "fotos" ? (
+            <div className="space-y-3">
+              <p className="text-sm text-[#666]">
+                Toque em cada etapa para enviar e ajustar formato, posição e zoom.
+              </p>
+
+              <AccordionItem
+                open={faseAberta === "hero"}
+                onToggle={() => setFaseAberta(faseAberta === "hero" ? null : "hero")}
+                title="Capa (hero)"
+                badge={images.hero.url ? "1 foto" : undefined}
+              >
+                <ImageField
+                  value={images.hero}
+                  onChange={updateHero}
+                  onFileSelect={(event) => void onHeroFileSelect(event)}
+                  disabled={loading}
+                  showLayoutOptions={false}
+                />
+              </AccordionItem>
+
+              {phaseLabels.map((phase) => {
+                const slots = images.phases[phase.phaseKey] ?? [criarSlot()];
+                const comFoto = slots.filter((s) => s.url.trim()).length;
+                return (
+                  <AccordionItem
+                    key={phase.phaseKey}
+                    open={faseAberta === phase.phaseKey}
+                    onToggle={() =>
+                      setFaseAberta(faseAberta === phase.phaseKey ? null : phase.phaseKey)
+                    }
+                    title={phase.label}
+                    subtitle={phase.short}
+                    badge={comFoto > 0 ? `${comFoto} foto${comFoto > 1 ? "s" : ""}` : undefined}
+                  >
+                    <PhaseImagesField
+                      phaseKey={phase.phaseKey}
+                      slots={slots}
+                      onChange={(slotId, ajuste) => updatePhaseSlot(phase.phaseKey, slotId, ajuste)}
+                      onAdd={() => addPhaseImage(phase.phaseKey)}
+                      onRemove={(slotId) => removePhaseSlot(phase.phaseKey, slotId)}
+                      onFileSelect={(slotId, event) =>
+                        void onPhaseFileSelect(phase.phaseKey, slotId, event)
+                      }
+                      disabled={loading}
+                    />
+                  </AccordionItem>
+                );
+              })}
+            </div>
+          ) : null}
+
+          {tab === "link" ? (
+            <div className="space-y-4">
+              <p className="text-sm text-[#666]">
+                Gere o link quando os dados estiverem completos. Você pode abrir a proposta ou só copiar
+                o endereço.
+              </p>
+              {link ? (
+                <div className="rounded-xl border border-[#e8e8e8] bg-[#fafafa] p-4">
+                  <p className="text-xs font-medium uppercase tracking-wide text-[#888]">Link gerado</p>
+                  <input readOnly value={link} className={cn(inputClass, "mt-2 bg-white")} />
+                  <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                    <button type="button" onClick={() => void copiarLink()} className={btnPrimary}>
+                      Copiar link
+                    </button>
+                    <a
+                      href={link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={cn(btnSecondary, "text-center")}
+                    >
+                      Abrir proposta
+                    </a>
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-xl border border-dashed border-[#ddd] bg-[#fafafa] px-4 py-8 text-center text-sm text-[#888]">
+                  Nenhum link gerado ainda.
+                </div>
+              )}
+            </div>
+          ) : null}
+
+          {status ? (
+            <p
+              className={cn(
+                "mt-4 rounded-lg px-3 py-2 text-sm",
+                status.includes("Erro") || status.includes("Não foi")
+                  ? "bg-red-50 text-red-700"
+                  : "bg-green-50 text-green-800",
+              )}
+            >
+              {status}
+            </p>
+          ) : null}
+        </form>
+      </div>
+
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#eee] bg-white/95 px-4 py-3 backdrop-blur sm:static sm:mt-6 sm:border-0 sm:bg-transparent sm:p-0 sm:backdrop-blur-none">
+        <div className="mx-auto flex max-w-3xl flex-col gap-2 sm:flex-row">
+          <button
+            type="button"
+            className={btnPrimary + " flex-1"}
+            disabled={!clientComplete || loading}
+            onClick={() => void salvarProposta(true)}
+          >
+            {loading ? "Salvando…" : "Gerar e abrir"}
           </button>
           <button
             type="button"
-            className={btnSecondary}
+            className={btnSecondary + " flex-1"}
             disabled={!clientComplete || loading}
             onClick={() => void salvarProposta(false)}
           >
             Só gerar link
           </button>
         </div>
+      </div>
+    </div>
+  );
+}
 
-        {link ? (
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_auto]">
-            <input readOnly value={link} className={inputClass} />
-            <button type="button" onClick={() => void copiarLink()} className={btnPrimary}>
-              Copiar
-            </button>
-          </div>
+function DestinoCard({
+  active,
+  title,
+  desc,
+  onClick,
+}: {
+  active: boolean;
+  title: string;
+  desc: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "rounded-xl border px-4 py-3 text-left transition",
+        active
+          ? "border-[#911419] bg-[#911419]/5 ring-1 ring-[#911419]"
+          : "border-[#e8e8e8] hover:border-[#ccc]",
+      )}
+    >
+      <p className="text-sm font-semibold text-[#333]">{title}</p>
+      <p className="mt-0.5 text-xs text-[#888]">{desc}</p>
+    </button>
+  );
+}
+
+function AccordionItem({
+  open,
+  onToggle,
+  title,
+  subtitle,
+  badge,
+  children,
+}: {
+  open: boolean;
+  onToggle: () => void;
+  title: string;
+  subtitle?: string;
+  badge?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="overflow-hidden rounded-xl border border-[#ececec]">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-[#fafafa]"
+      >
+        <span
+          className={cn(
+            "flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs transition",
+            open ? "bg-[#911419] text-white" : "bg-[#eee] text-[#666]",
+          )}
+        >
+          {open ? "−" : "+"}
+        </span>
+        <span className="min-w-0 flex-1">
+          {subtitle ? <span className="block text-xs text-[#888]">{subtitle}</span> : null}
+          <span className="block truncate text-sm font-medium text-[#333]">{title}</span>
+        </span>
+        {badge ? (
+          <span className="shrink-0 rounded-full bg-[#911419]/10 px-2 py-0.5 text-xs font-medium text-[#911419]">
+            {badge}
+          </span>
         ) : null}
-
-        {status ? <p className="text-sm text-[#2f6f39]">{status}</p> : null}
-      </form>
+      </button>
+      {open ? <div className="border-t border-[#f0f0f0] px-4 py-4">{children}</div> : null}
     </div>
   );
 }
@@ -524,7 +718,7 @@ function Field({
   className?: string;
 }) {
   return (
-    <label className={className ? `block text-sm text-[#444] ${className}` : "block text-sm text-[#444]"}>
+    <label className={cn("block text-sm text-[#444]", className)}>
       <span className="mb-1 block font-medium">{label}</span>
       {children}
     </label>
@@ -532,31 +726,33 @@ function Field({
 }
 
 function ImageField({
-  label,
   value,
   onChange,
   onFileSelect,
   disabled,
+  showLayoutOptions = true,
 }: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
+  value: ImageSlot;
+  onChange: (ajuste: Partial<ImageAdjustments>) => void;
   onFileSelect: (event: ChangeEvent<HTMLInputElement>) => void;
   disabled?: boolean;
+  showLayoutOptions?: boolean;
 }) {
-  const inputId = `file-${label.replace(/\s+/g, "-").toLowerCase()}`;
+  const inputId = "file-hero";
   return (
-    <div className="rounded-lg border border-[#ececec] p-3">
-      <p className="text-sm font-medium text-[#333]">{label}</p>
-      <div className="mt-2 grid gap-2 sm:grid-cols-[1fr_auto]">
+    <div className="space-y-3">
+      <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
         <input
           className={inputClass}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder="/images/hero-bg.jpg ou https://..."
+          value={value.url}
+          onChange={(e) => onChange({ url: e.target.value })}
+          placeholder="URL ou envie um arquivo"
         />
-        <label htmlFor={inputId} className={`${btnSecondary} cursor-pointer text-center ${disabled ? "opacity-50" : ""}`}>
-          Enviar arquivo
+        <label
+          htmlFor={inputId}
+          className={cn(btnUpload, disabled && "pointer-events-none opacity-50")}
+        >
+          Enviar foto
           <input
             id={inputId}
             type="file"
@@ -567,15 +763,20 @@ function ImageField({
           />
         </label>
       </div>
-      {value ? (
-        <img src={value} alt={label} className="mt-3 aspect-[16/9] w-full rounded-md object-cover" />
+      {value.url ? (
+        <ImageAdjustmentEditor
+          value={value}
+          onChange={(ajuste) => onChange(ajuste)}
+          aspectClass="aspect-[16/9]"
+          disabled={disabled}
+          showLayoutOptions={showLayoutOptions}
+        />
       ) : null}
     </div>
   );
 }
 
 function PhaseImagesField({
-  label,
   phaseKey,
   slots,
   onChange,
@@ -584,83 +785,87 @@ function PhaseImagesField({
   onFileSelect,
   disabled,
 }: {
-  label: string;
   phaseKey: string;
   slots: ImageSlot[];
-  onChange: (slotId: string, value: string) => void;
+  onChange: (slotId: string, ajuste: Partial<ImageAdjustments>) => void;
   onAdd: () => void;
   onRemove: (slotId: string) => void;
   onFileSelect: (slotId: string, event: ChangeEvent<HTMLInputElement>) => void;
   disabled?: boolean;
 }) {
   return (
-    <div className="rounded-lg border border-[#ececec] p-3">
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-sm font-medium text-[#333]">{label}</p>
-        <button type="button" className="text-xs font-semibold text-[#911419]" onClick={onAdd} disabled={disabled}>
+    <div className="space-y-3">
+      <div className="flex justify-end">
+        <button
+          type="button"
+          className="text-xs font-semibold text-[#911419] hover:underline"
+          onClick={onAdd}
+          disabled={disabled}
+        >
           + Adicionar foto
         </button>
       </div>
-      <div className="mt-3 space-y-3">
-        {slots.map((slot, index) => {
-          const inputId = `file-${phaseKey}-${slot.id}`;
-          return (
-            <div key={slot.id} className="rounded-md border border-[#f0f0f0] p-3">
-              <div className="mb-2 flex items-center justify-between">
-                <span className="text-xs font-medium text-[#666]">Foto {index + 1}</span>
-                {slots.length > 1 ? (
-                  <button
-                    type="button"
-                    className="text-xs text-[#999] hover:text-[#911419]"
-                    onClick={() => onRemove(slot.id)}
-                    disabled={disabled}
-                  >
-                    Remover
-                  </button>
-                ) : null}
-              </div>
-              <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
-                <input
-                  className={inputClass}
-                  value={slot.url}
-                  onChange={(e) => onChange(slot.id, e.target.value)}
-                  placeholder="/images/phase-01.jpg ou https://..."
-                />
-                <label
-                  htmlFor={inputId}
-                  className={`${btnSecondary} cursor-pointer text-center ${disabled ? "opacity-50" : ""}`}
+      {slots.map((slot, index) => {
+        const inputId = `file-${phaseKey}-${slot.id}`;
+        return (
+          <div key={slot.id} className="rounded-lg border border-[#f0f0f0] bg-[#fafafa] p-3">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-xs font-medium text-[#666]">Foto {index + 1}</span>
+              {slots.length > 1 ? (
+                <button
+                  type="button"
+                  className="text-xs text-[#999] hover:text-[#911419]"
+                  onClick={() => onRemove(slot.id)}
+                  disabled={disabled}
                 >
-                  Enviar arquivo
-                  <input
-                    id={inputId}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    disabled={disabled}
-                    onChange={(event) => onFileSelect(slot.id, event)}
-                  />
-                </label>
-              </div>
-              {slot.url ? (
-                <img
-                  src={slot.url}
-                  alt={`${label} ${index + 1}`}
-                  className="mt-3 aspect-[16/9] w-full rounded-md object-cover"
-                />
+                  Remover
+                </button>
               ) : null}
             </div>
-          );
-        })}
-      </div>
+            <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
+              <input
+                className={inputClass}
+                value={slot.url}
+                onChange={(e) => onChange(slot.id, { url: e.target.value })}
+                placeholder="URL ou envie um arquivo"
+              />
+              <label
+                htmlFor={inputId}
+                className={cn(btnUpload, disabled && "pointer-events-none opacity-50")}
+              >
+                Enviar
+                <input
+                  id={inputId}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  disabled={disabled}
+                  onChange={(event) => onFileSelect(slot.id, event)}
+                />
+              </label>
+            </div>
+            {slot.url ? (
+              <ImageAdjustmentEditor
+                value={slot}
+                onChange={(ajuste) => onChange(slot.id, ajuste)}
+                disabled={disabled}
+              />
+            ) : null}
+          </div>
+        );
+      })}
     </div>
   );
 }
 
 const inputClass =
-  "w-full rounded-lg border border-[#d5d5d5] px-3 py-2 text-sm outline-none focus:border-[#911419]";
+  "w-full rounded-lg border border-[#ddd] bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#911419] focus:ring-2 focus:ring-[#911419]/15";
 
 const btnPrimary =
-  "rounded-lg bg-[#911419] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#7a1115] disabled:cursor-not-allowed disabled:opacity-50";
+  "rounded-lg bg-[#911419] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#7a1115] disabled:cursor-not-allowed disabled:opacity-50";
 
 const btnSecondary =
-  "rounded-lg bg-[#333] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#222] disabled:cursor-not-allowed disabled:opacity-50";
+  "rounded-lg border border-[#333] bg-white px-4 py-3 text-sm font-semibold text-[#333] transition hover:bg-[#f5f5f5] disabled:cursor-not-allowed disabled:opacity-50";
+
+const btnUpload =
+  "inline-flex cursor-pointer items-center justify-center rounded-lg border border-[#911419] bg-white px-4 py-2.5 text-sm font-semibold text-[#911419] transition hover:bg-[#911419]/5";

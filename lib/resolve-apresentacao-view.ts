@@ -4,7 +4,9 @@ import {
   applyImageOverrides,
   parseImageOverrides,
   resolveHeroImage,
+  type PropostaPhaseView,
 } from "@/lib/proposta-images";
+import type { ImageAdjustments } from "@/lib/proposta-image-fit";
 
 type QueryValue = string | string[] | undefined;
 
@@ -14,8 +16,11 @@ export function resolveApresentacaoView(
 ) {
   const propostaData = buildPropostaData(searchParams);
   const imageOverrides = parseImageOverrides(searchParams, variant);
-  const phases = applyImageOverrides(buildPhasesForVariant(variant), imageOverrides);
-  const heroImage = resolveHeroImage(imageOverrides);
+  const phases: PropostaPhaseView[] = applyImageOverrides(
+    buildPhasesForVariant(variant),
+    imageOverrides,
+  );
+  const heroImage: ImageAdjustments = resolveHeroImage(imageOverrides);
   const rawReadonly = searchParams.readonly;
   const readonlyValue = Array.isArray(rawReadonly) ? rawReadonly[0] : rawReadonly;
   const isReadonly = readonlyValue === "1";

@@ -1,7 +1,16 @@
 import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 import { put, head } from "@vercel/blob";
+import {
+  type ImageAdjustments,
+  migrarImagensLegadas,
+  type PropostaImagensPayload,
+} from "@/lib/proposta-image-fit";
 import { montarSlugProposta, gerarIdCurto } from "@/lib/proposta-slug";
+import {
+  serializeHeroAdjustments,
+  serializePhaseAdjustments,
+} from "@/lib/proposta-images";
 import {
   ERRO_BLOB_NAO_CONFIGURADO,
   blobHeadOptions,
@@ -18,10 +27,7 @@ export interface PropostaSalva {
   slug: string;
   destino: PropostaDestino;
   dados: Record<string, string>;
-  imagens: {
-    hero: string;
-    phases: Record<string, string[]>;
-  };
+  imagens: PropostaImagensPayload;
   criadoEm: string;
 }
 
@@ -118,13 +124,16 @@ export function propostaSalvaParaSearchParams(proposta: PropostaSalva): Record<s
   if (proposta.dados.cidade_obra) {
     params.cidade = proposta.dados.cidade_obra;
   }
-  if (proposta.imagens.hero) {
-    params.img_hero = proposta.imagens.hero;
-  }
-  Object.entries(proposta.imagens.phases).forEach(([phaseKey, urls]) => {
-    const filtered = urls.map((url) => url.trim()).filter(Boolean);
-    if (filtered.length > 0) params[`img_${phaseKey}`] = filtered.join("|");
+
+  const { hero, phases } = migrarImagensLegadas(proposta.imagens);
+  Object.assign(params, serializeHeroAdjustments(hero));
+
+  Object.entries(phases).forEach(([phaseKey, ajustes]) => {
+    const urls = ajustes.map((item) => item.url.trim()).filter(Boolean);
+    if (urls.length > 0) params[`img_${phaseKey}`] = urls.join("|");
   });
+  Object.assign(params, serializePhaseAdjustments(phases));
+
   return params;
 }
 

@@ -1,10 +1,23 @@
 import { buildPhasesForVariant, type PropostaPhase } from "@/lib/proposta-phases";
+import {
+  type ImageAdjustments,
+  criarAjusteImagem,
+  normalizarAjusteImagem,
+  parseAjustesLista,
+  serializarAjustesLista,
+} from "@/lib/proposta-image-fit";
 
 type QueryValue = string | string[] | undefined;
 
+export type PropostaPhaseView = PropostaPhase & {
+  gallery: ImageAdjustments[];
+};
+
 export interface PropostaImageOverrides {
   hero?: string;
+  heroAdjustments?: ImageAdjustments;
   phaseImages: Record<string, string[]>;
+  phaseAdjustments: Record<string, ImageAdjustments[]>;
 }
 
 export const DEFAULT_PROPOSTA_IMAGES = {
@@ -50,52 +63,95 @@ function parsePhaseImages(searchParams: Record<string, QueryValue>, phaseKey: st
   return images;
 }
 
+function combinarUrlsEAjustes(urls: string[], ajustesBase: ImageAdjustments[]): ImageAdjustments[] {
+  return urls.map((url, index) =>
+    normalizarAjusteImagem({
+      url,
+      fit: ajustesBase[index]?.fit,
+      posX: ajustesBase[index]?.posX,
+      posY: ajustesBase[index]?.posY,
+      scale: ajustesBase[index]?.scale,
+      shape: ajustesBase[index]?.shape,
+      fullBleed: ajustesBase[index]?.fullBleed,
+    }),
+  );
+}
+
 export function parseImageOverrides(
   searchParams: Record<string, QueryValue>,
   variant: "apresentacao" | "proposta" = "apresentacao",
 ): PropostaImageOverrides {
   const phaseImages: Record<string, string[]> = {};
+  const phaseAdjustments: Record<string, ImageAdjustments[]> = {};
   const total = buildPhasesForVariant(variant).length;
 
   for (let i = 1; i <= total; i += 1) {
     const key = String(i).padStart(2, "0");
-    const list = parsePhaseImages(searchParams, key);
-    if (list.length > 0) phaseImages[key] = list;
+    const urls = parsePhaseImages(searchParams, key);
+    if (urls.length > 0) {
+      phaseImages[key] = urls;
+      const metaRaw = getFirstValue(searchParams[`img_${key}_meta`]).trim();
+      phaseAdjustments[key] = combinarUrlsEAjustes(urls, parseAjustesLista(metaRaw, urls.length));
+    }
   }
 
-  const hero = getFirstValue(searchParams.img_hero).trim();
+  const heroUrl = getFirstValue(searchParams.img_hero).trim();
+  const heroMetaRaw = getFirstValue(searchParams.img_hero_meta).trim();
+  let heroAdjustments: ImageAdjustments | undefined;
+  if (heroUrl) {
+    try {
+      const meta = heroMetaRaw ? (JSON.parse(heroMetaRaw) as Partial<ImageAdjustments>) : {};
+      heroAdjustments = normalizarAjusteImagem({ ...meta, url: heroUrl });
+    } catch {
+      heroAdjustments = normalizarAjusteImagem(heroUrl);
+    }
+  }
 
   return {
-    hero: hero || undefined,
+    hero: heroUrl || undefined,
+    heroAdjustments,
     phaseImages,
+    phaseAdjustments,
   };
 }
 
 export function applyImageOverrides(
   phases: PropostaPhase[],
   overrides: PropostaImageOverrides,
-) {
+): PropostaPhaseView[] {
   return phases.map((phase) => {
     const customImages = overrides.phaseImages[phase.number];
-    if (!customImages?.length) return phase;
+    if (!customImages?.length) {
+      return { ...phase, gallery: [criarAjusteImagem(phase.image)] };
+    }
+
+    const gallery =
+      overrides.phaseAdjustments[phase.number] ??
+      combinarUrlsEAjustes(customImages, []);
 
     return {
       ...phase,
-      image: customImages[0],
-      images: customImages,
+      image: gallery[0]?.url ?? customImages[0],
+      images: gallery.map((item) => item.url),
+      gallery,
     };
   });
 }
 
-export function resolveHeroImage(overrides: PropostaImageOverrides): string {
-  return overrides.hero || DEFAULT_PROPOSTA_IMAGES.hero;
+export function resolveHeroImage(overrides: PropostaImageOverrides): ImageAdjustments {
+  if (overrides.heroAdjustments) return overrides.heroAdjustments;
+  if (overrides.hero) return normalizarAjusteImagem(overrides.hero);
+  return normalizarAjusteImagem(DEFAULT_PROPOSTA_IMAGES.hero);
 }
 
 export function defaultPhaseImageLists(
   variant: "apresentacao" | "proposta" = "apresentacao",
-): Record<string, string[]> {
+): Record<string, ImageAdjustments[]> {
   return Object.fromEntries(
-    buildPhasesForVariant(variant).map((phase) => [phase.number, [phase.image]]),
+    buildPhasesForVariant(variant).map((phase) => [
+      phase.number,
+      [criarAjusteImagem(phase.image)],
+    ]),
   );
 }
 
@@ -106,4 +162,32 @@ export function serializePhaseImages(phaseImages: Record<string, string[]>): Rec
     if (filtered.length > 0) serialized[`img_${key}`] = filtered.join("|");
   });
   return serialized;
+}
+
+export function serializePhaseAdjustments(
+  phases: Record<string, ImageAdjustments[]>,
+): Record<string, string> {
+  const serialized: Record<string, string> = {};
+  Object.entries(phases).forEach(([key, ajustes]) => {
+    const filtered = ajustes.filter((item) => item.url.trim());
+    if (filtered.length > 0) {
+      serialized[`img_${key}_meta`] = serializarAjustesLista(filtered);
+    }
+  });
+  return serialized;
+}
+
+export function serializeHeroAdjustments(hero: ImageAdjustments): Record<string, string> {
+  if (!hero.url.trim()) return {};
+  return {
+    img_hero: hero.url,
+    img_hero_meta: JSON.stringify({
+      fit: hero.fit,
+      posX: hero.posX,
+      posY: hero.posY,
+      scale: hero.scale,
+      shape: hero.shape,
+      fullBleed: hero.fullBleed,
+    }),
+  };
 }

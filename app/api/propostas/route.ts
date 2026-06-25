@@ -17,10 +17,7 @@ export async function POST(request: NextRequest) {
     const salva = await salvarProposta({
       destino,
       dados,
-      imagens: {
-        hero: String(imagens.hero ?? ""),
-        phases: imagens.phases ?? {},
-      },
+      imagens: imagens as import("@/lib/proposta-image-fit").PropostaImagensPayload,
     });
 
     const origin = request.nextUrl.origin;
