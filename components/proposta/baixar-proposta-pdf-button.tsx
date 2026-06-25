@@ -2,7 +2,6 @@
 
 import { Download, Loader2 } from "lucide-react";
 import { useState } from "react";
-import { exportPropostaPdf } from "@/lib/export-proposta-pdf";
 
 interface BaixarPropostaPdfButtonProps {
   nomeCliente: string;
@@ -17,16 +16,22 @@ export function BaixarPropostaPdfButton({
 }: BaixarPropostaPdfButtonProps) {
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState("");
+  const [progresso, setProgresso] = useState("");
 
   async function handleClick() {
     setLoading(true);
     setErro("");
+    setProgresso("");
     try {
-      await exportPropostaPdf(nomeCliente);
+      const { exportPropostaPdf } = await import("@/lib/export-proposta-pdf");
+      await exportPropostaPdf(nomeCliente, (atual, total) => {
+        setProgresso(`Página ${atual} de ${total}…`);
+      });
     } catch (error) {
       setErro(error instanceof Error ? error.message : "Não foi possível gerar o PDF.");
     } finally {
       setLoading(false);
+      setProgresso("");
     }
   }
 
@@ -44,6 +49,7 @@ export function BaixarPropostaPdfButton({
         {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : <Download className="h-6 w-6" />}
         {loading ? "Gerando PDF..." : label}
       </button>
+      {progresso ? <p className="text-sm text-background/60">{progresso}</p> : null}
       {erro ? <p className="max-w-md text-center text-sm font-medium text-red-400">{erro}</p> : null}
     </div>
   );
