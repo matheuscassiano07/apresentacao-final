@@ -101,17 +101,22 @@ export function CallToAction({ nomeCliente = "cliente" }: CallToActionProps) {
           </a>
         </nav>
 
-        <BaixarPropostaPdfButton
-          nomeCliente={nomeCliente}
-          label="Baixar PDF da Apresentação"
-          className="mt-10 inline-flex items-center gap-3 rounded-xl bg-background px-8 py-4 text-sm font-medium uppercase tracking-widest text-foreground shadow-[0_20px_40px_rgba(0,0,0,0.15)] transition-all duration-300 hover:-translate-y-1 hover:bg-background/90 disabled:cursor-wait disabled:opacity-70"
-        />
-
         {/* Informação Adicional */}
         <div className="mt-16 animate-fade-lift" style={{ animationDelay: "300ms" }}>
           <p className="text-sm text-background/60">
             Estamos disponíveis para tirar suas dúvidas e agendar uma reunião.
           </p>
+        </div>
+
+        <div className="mt-12 border-t border-background/10 pt-10">
+          <p className="mb-4 text-xs uppercase tracking-[0.16em] text-background/50">
+            Salvar esta apresentação
+          </p>
+          <BaixarPropostaPdfButton
+            nomeCliente={nomeCliente}
+            label="Baixar PDF da Apresentação"
+            className="inline-flex items-center gap-3 rounded-xl bg-background px-8 py-4 text-sm font-medium uppercase tracking-widest text-foreground shadow-[0_20px_40px_rgba(0,0,0,0.15)] transition-all duration-300 hover:-translate-y-1 hover:bg-background/90 disabled:cursor-wait disabled:opacity-70"
+          />
         </div>
       </div>
     </section>

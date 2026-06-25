@@ -1,3 +1,5 @@
+"use client";
+
 function waitForImages(root: HTMLElement): Promise<void> {
   const images = Array.from(root.querySelectorAll("img"));
   return Promise.all(
@@ -57,14 +59,17 @@ export async function exportPropostaPdf(nomeCliente: string): Promise<void> {
           logging: false,
           backgroundColor: "#ffffff",
           scrollX: 0,
-          scrollY: -window.scrollY,
+          scrollY: 0,
+          width: element.scrollWidth,
+          height: element.scrollHeight,
           windowWidth: element.scrollWidth,
+          windowHeight: element.scrollHeight,
           onclone: (clonedDoc) => {
             const clonedRoot = clonedDoc.getElementById("proposta-export-root");
             if (!clonedRoot) return;
 
             clonedRoot.querySelectorAll("[data-pdf-exclude]").forEach((node) => node.remove());
-            clonedRoot.classList.remove("proposta-exporting");
+            clonedRoot.classList.remove("proposta-exporting", "proposta-compact");
 
             clonedRoot.querySelectorAll("img").forEach((img) => {
               const src = img.getAttribute("src");

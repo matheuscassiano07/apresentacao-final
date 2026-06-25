@@ -31,8 +31,6 @@ export function FooterCTA({
           <br />
           seu sonho em realidade?
         </h2>
-
-        <BaixarPropostaPdfButton nomeCliente={nomeCliente} />
       </div>
 
       {/* Assinaturas */}
@@ -106,6 +104,14 @@ export function FooterCTA({
             </p>
           </div>
         </div>
+      </div>
+
+      {/* Baixar PDF — no final da página */}
+      <div className="border-t border-background/10 px-4 py-10 text-center sm:py-14">
+        <p className="mb-4 text-xs uppercase tracking-[0.16em] text-background/50 sm:text-sm">
+          Salvar esta proposta
+        </p>
+        <BaixarPropostaPdfButton nomeCliente={nomeCliente} />
       </div>
     </footer>
   );

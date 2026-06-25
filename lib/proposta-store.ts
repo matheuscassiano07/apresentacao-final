@@ -7,7 +7,6 @@ import {
   blobHeadOptions,
   blobPutOptions,
   blobStorageConfigurado,
-  isVercelRuntime,
   mensagemErroArmazenamento,
   podeUsarDiscoLocal,
 } from "@/lib/proposta-storage-env";

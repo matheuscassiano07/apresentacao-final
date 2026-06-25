@@ -44,7 +44,7 @@ export function BaixarPropostaPdfButton({
         {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : <Download className="h-6 w-6" />}
         {loading ? "Gerando PDF..." : label}
       </button>
-      {erro ? <p className="max-w-md text-center text-xs text-red-300">{erro}</p> : null}
+      {erro ? <p className="max-w-md text-center text-sm font-medium text-red-400">{erro}</p> : null}
     </div>
   );
 }
