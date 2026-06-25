@@ -12,6 +12,11 @@ import {
 } from "@/lib/proposta-image-fit";
 import { ImageAdjustmentEditor } from "@/components/proposta/image-adjustment-editor";
 import { cn } from "@/lib/utils";
+import {
+  carregarLayoutLocal,
+  salvarLayoutLocal,
+  type PropostaLayoutPadrao,
+} from "@/lib/proposta-layout-padrao";
 
 type ClientFields = {
   nome_cliente: string;
@@ -75,6 +80,51 @@ function criarHeroInicial(): ImageSlot {
 
 function slotSemId({ id: _id, ...ajuste }: ImageSlot): ImageAdjustments {
   return normalizarAjusteImagem(ajuste);
+}
+
+function layoutParaImageFields(
+  layout: PropostaLayoutPadrao,
+  destino: "proposta" | "apresentacao",
+): ImageFields {
+  const phaseKeys = buildPhasesForVariant(destino).map((phase) => phase.number);
+  const phases: Record<string, ImageSlot[]> = {};
+
+  for (const key of phaseKeys) {
+    const saved = layout.phases[key];
+    phases[key] =
+      saved && saved.length > 0
+        ? saved.map((ajuste) => ({ id: crypto.randomUUID(), ...normalizarAjusteImagem(ajuste) }))
+        : [criarSlot()];
+  }
+
+  return {
+    hero: { id: crypto.randomUUID(), ...normalizarAjusteImagem(layout.hero) },
+    phases,
+  };
+}
+
+function imagensAtuaisParaPayload(images: ImageFields) {
+  return {
+    hero: slotSemId(images.hero),
+    phases: Object.fromEntries(
+      Object.entries(images.phases).map(([key, slots]) => [key, slots.map(slotSemId)]),
+    ),
+  };
+}
+
+async function buscarLayoutPadrao(destino: "proposta" | "apresentacao"): Promise<ImageFields | null> {
+  try {
+    const response = await fetch(`/api/propostas/layout-padrao?destino=${destino}`, { cache: "no-store" });
+    if (response.ok) {
+      const data = (await response.json()) as { layout?: PropostaLayoutPadrao };
+      if (data.layout) return layoutParaImageFields(data.layout, destino);
+    }
+  } catch {
+    // tenta local
+  }
+
+  const local = carregarLayoutLocal(destino);
+  return local ? layoutParaImageFields(local, destino) : null;
 }
 
 function onlyDigits(value: string) {
@@ -163,6 +213,8 @@ export function GerarPropostaForm() {
   const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState<FormTab>("dados");
   const [faseAberta, setFaseAberta] = useState<string | null>("hero");
+  const [layoutCarregando, setLayoutCarregando] = useState(true);
+  const [temLayoutPadrao, setTemLayoutPadrao] = useState(false);
 
   const phaseLabels = useMemo(
     () =>
@@ -175,8 +227,28 @@ export function GerarPropostaForm() {
   );
 
   useEffect(() => {
-    setImages((prev) => ({ ...prev, phases: criarFasesIniciais(destino) }));
-    setFaseAberta("hero");
+    let cancelado = false;
+    setLayoutCarregando(true);
+
+    void (async () => {
+      const carregado = await buscarLayoutPadrao(destino);
+      if (cancelado) return;
+
+      if (carregado) {
+        setImages(carregado);
+        setTemLayoutPadrao(true);
+      } else {
+        setImages({ hero: criarHeroInicial(), phases: criarFasesIniciais(destino) });
+        setTemLayoutPadrao(false);
+      }
+
+      setLayoutCarregando(false);
+      setFaseAberta("hero");
+    })();
+
+    return () => {
+      cancelado = true;
+    };
   }, [destino]);
 
   const clientComplete = useMemo(
@@ -218,13 +290,19 @@ export function GerarPropostaForm() {
   }
 
   function addPhaseImage(phaseKey: string) {
+    const newSlot = criarSlot();
     setImages((prev) => ({
       ...prev,
       phases: {
         ...prev.phases,
-        [phaseKey]: [...(prev.phases[phaseKey] ?? [criarSlot()]), criarSlot()],
+        [phaseKey]: [...(prev.phases[phaseKey] ?? [criarSlot()]), newSlot],
       },
     }));
+    setFaseAberta(phaseKey);
+    setStatus("Nova foto adicionada — envie a imagem no slot abaixo.");
+    requestAnimationFrame(() => {
+      document.getElementById(`slot-${newSlot.id}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
   }
 
   function removePhaseSlot(phaseKey: string, slotId: string) {
@@ -265,6 +343,61 @@ export function GerarPropostaForm() {
       setStatus(`Foto da etapa ${phaseKey} enviada.`);
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Erro ao enviar imagem.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function salvarLayoutPadraoAtual() {
+    setLoading(true);
+    setStatus("");
+    try {
+      const imagens = imagensAtuaisParaPayload(images);
+      const response = await fetch("/api/propostas/layout-padrao", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ destino, imagens }),
+      });
+
+      if (!response.ok) throw new Error(await lerErroApi(response));
+
+      const data = (await response.json()) as { layout: PropostaLayoutPadrao };
+      salvarLayoutLocal(data.layout);
+      setTemLayoutPadrao(true);
+      setStatus("Layout padrão salvo. Ao abrir esta página, as fotos e ajustes voltarão iguais.");
+    } catch (error) {
+      const payload = imagensAtuaisParaPayload(images);
+      const local: PropostaLayoutPadrao = {
+        destino,
+        hero: payload.hero,
+        phases: payload.phases,
+        atualizadoEm: new Date().toISOString(),
+      };
+      salvarLayoutLocal(local);
+      setTemLayoutPadrao(true);
+      setStatus(
+        error instanceof Error
+          ? `Layout salvo só neste navegador (${error.message}).`
+          : "Layout salvo neste navegador.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function recarregarLayoutPadrao() {
+    setLoading(true);
+    setStatus("");
+    try {
+      const carregado = await buscarLayoutPadrao(destino);
+      if (!carregado) {
+        setStatus("Nenhum layout padrão encontrado para este destino.");
+        return;
+      }
+      setImages(carregado);
+      setTemLayoutPadrao(true);
+      setTab("fotos");
+      setStatus("Layout padrão restaurado.");
     } finally {
       setLoading(false);
     }
@@ -322,11 +455,13 @@ export function GerarPropostaForm() {
   }
 
   return (
-    <div className="relative mx-auto w-full max-w-3xl pb-28 sm:pb-8">
-      {loading ? (
+    <div className="relative mx-auto w-full max-w-3xl pb-36 sm:pb-8">
+      {loading || layoutCarregando ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-[2px]">
           <div className="rounded-xl bg-white px-6 py-4 shadow-xl">
-            <p className="text-sm font-medium text-[#333]">Enviando…</p>
+            <p className="text-sm font-medium text-[#333]">
+              {layoutCarregando ? "Carregando layout…" : "Enviando…"}
+            </p>
           </div>
         </div>
       ) : null}
@@ -514,8 +649,36 @@ export function GerarPropostaForm() {
 
           {tab === "fotos" ? (
             <div className="space-y-3">
+              <div className="rounded-xl border border-[#e8e8e8] bg-[#fafafa] p-4">
+                <p className="text-sm font-medium text-[#333]">Layout padrão</p>
+                <p className="mt-1 text-xs text-[#666]">
+                  {temLayoutPadrao
+                    ? "Suas fotos e ajustes serão carregados automaticamente ao abrir esta página."
+                    : "Salve o layout atual para reutilizar as mesmas fotos, formatos e posições."}
+                </p>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    disabled={loading || layoutCarregando}
+                    onClick={() => void salvarLayoutPadraoAtual()}
+                  >
+                    Salvar layout padrão
+                  </button>
+                  <button
+                    type="button"
+                    className={btnSecondary}
+                    disabled={loading || layoutCarregando}
+                    onClick={() => void recarregarLayoutPadrao()}
+                  >
+                    Restaurar layout
+                  </button>
+                </div>
+              </div>
+
               <p className="text-sm text-[#666]">
-                Toque em cada etapa para enviar e ajustar formato, posição e zoom.
+                Abra cada etapa, use <strong>+ Adicionar foto</strong> para incluir mais imagens na mesma
+                etapa, e ajuste formato, posição e zoom.
               </p>
 
               <AccordionItem
@@ -536,6 +699,12 @@ export function GerarPropostaForm() {
               {phaseLabels.map((phase) => {
                 const slots = images.phases[phase.phaseKey] ?? [criarSlot()];
                 const comFoto = slots.filter((s) => s.url.trim()).length;
+                const badge =
+                  slots.length > 1
+                    ? `${comFoto}/${slots.length} fotos`
+                    : comFoto > 0
+                      ? "1 foto"
+                      : undefined;
                 return (
                   <AccordionItem
                     key={phase.phaseKey}
@@ -545,7 +714,7 @@ export function GerarPropostaForm() {
                     }
                     title={phase.label}
                     subtitle={phase.short}
-                    badge={comFoto > 0 ? `${comFoto} foto${comFoto > 1 ? "s" : ""}` : undefined}
+                    badge={badge}
                   >
                     <PhaseImagesField
                       phaseKey={phase.phaseKey}
@@ -795,11 +964,17 @@ function PhaseImagesField({
 }) {
   return (
     <div className="space-y-3">
-      <div className="flex justify-end">
+      <div className="flex items-center justify-between gap-2 rounded-lg bg-[#911419]/5 px-3 py-2">
+        <span className="text-xs font-medium text-[#666]">
+          {slots.length} foto{slots.length > 1 ? "s" : ""} nesta etapa
+        </span>
         <button
           type="button"
-          className="text-xs font-semibold text-[#911419] hover:underline"
-          onClick={onAdd}
+          className="rounded-lg bg-[#911419] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#7a1115] disabled:opacity-50"
+          onClick={(e) => {
+            e.stopPropagation();
+            onAdd();
+          }}
           disabled={disabled}
         >
           + Adicionar foto
@@ -808,7 +983,11 @@ function PhaseImagesField({
       {slots.map((slot, index) => {
         const inputId = `file-${phaseKey}-${slot.id}`;
         return (
-          <div key={slot.id} className="rounded-lg border border-[#f0f0f0] bg-[#fafafa] p-3">
+          <div
+            key={slot.id}
+            id={`slot-${slot.id}`}
+            className="rounded-lg border border-[#f0f0f0] bg-[#fafafa] p-3"
+          >
             <div className="mb-2 flex items-center justify-between">
               <span className="text-xs font-medium text-[#666]">Foto {index + 1}</span>
               {slots.length > 1 ? (
