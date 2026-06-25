@@ -4,8 +4,9 @@ import { put, head } from "@vercel/blob";
 import { montarSlugProposta, gerarIdCurto } from "@/lib/proposta-slug";
 import {
   ERRO_BLOB_NAO_CONFIGURADO,
+  blobHeadOptions,
   blobPutOptions,
-  getBlobToken,
+  blobStorageConfigurado,
   isVercelRuntime,
   mensagemErroArmazenamento,
   podeUsarDiscoLocal,
@@ -57,8 +58,7 @@ async function salvarBlob(slug: string, payload: PropostaSalva): Promise<void> {
 
 async function carregarBlob(slug: string): Promise<PropostaSalva | null> {
   try {
-    const token = getBlobToken();
-    const meta = await head(blobPath(slug), token ? { token } : undefined);
+    const meta = await head(blobPath(slug), blobHeadOptions());
     const response = await fetch(meta.url, { cache: "no-store" });
     if (!response.ok) return null;
     return (await response.json()) as PropostaSalva;
@@ -102,7 +102,7 @@ export async function salvarProposta(input: {
 }
 
 export async function carregarProposta(slug: string): Promise<PropostaSalva | null> {
-  if (isVercelRuntime() || process.env.BLOB_READ_WRITE_TOKEN?.trim()) {
+  if (blobStorageConfigurado() && !podeUsarDiscoLocal()) {
     const blobData = await carregarBlob(slug);
     if (blobData) return blobData;
   }

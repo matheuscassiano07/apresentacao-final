@@ -1,6 +1,6 @@
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { NextResponse } from "next/server";
-import { getBlobToken, mensagemErroArmazenamento } from "@/lib/proposta-storage-env";
+import { getBlobToken, mensagemErroArmazenamento, usaTokenExplicito } from "@/lib/proposta-storage-env";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -9,7 +9,7 @@ export async function POST(request: Request) {
   try {
     const body = (await request.json()) as HandleUploadBody;
 
-    const token = getBlobToken();
+    const token = usaTokenExplicito() ? getBlobToken() : undefined;
     const jsonResponse = await handleUpload({
       ...(token ? { token } : {}),
       body,
